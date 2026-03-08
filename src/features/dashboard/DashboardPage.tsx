@@ -114,18 +114,27 @@ export default function DashboardPage() {
               <button className="text-[var(--text-3)] hover:text-[var(--text-1)] text-lg leading-none">⋯</button>
             </div>
             <div className="grid grid-cols-3 gap-3">
-              {QUICK_ACTIONS.map((a) => (
-                <button
-                  key={a.title}
-                  className="flex flex-col items-center p-3 rounded-xl bg-[var(--bg-base)] hover:bg-[var(--bg-hover)] border border-[var(--border)] hover:border-indigo-500/50 transition-all text-center"
-                >
-                  <span className={`w-10 h-10 rounded-xl ${a.bg} flex items-center justify-center text-xl mb-2`}>
-                    {a.icon}
-                  </span>
-                  <span className="text-xs font-medium text-[var(--text-1)]">{a.title}</span>
-                  <span className="text-xs text-[var(--text-3)] mt-0.5">{a.subtitle}</span>
-                </button>
-              ))}
+              {QUICK_ACTIONS.map((a) => {
+                const inner = (
+                  <>
+                    <span className={`w-10 h-10 rounded-xl ${a.bg} flex items-center justify-center text-xl mb-2`}>
+                      {a.icon}
+                    </span>
+                    <span className="text-xs font-medium text-[var(--text-1)]">{a.title}</span>
+                    <span className="text-xs text-[var(--text-3)] mt-0.5">{a.subtitle}</span>
+                  </>
+                )
+                const cls = "flex flex-col items-center p-3 rounded-xl bg-[var(--bg-base)] hover:bg-[var(--bg-hover)] border border-[var(--border)] hover:border-indigo-500/50 transition-all text-center"
+                return a.title === 'Translate' ? (
+                  <Link key={a.title} to="/translate" className={cls}>
+                    {inner}
+                  </Link>
+                ) : (
+                  <button key={a.title} className={cls}>
+                    {inner}
+                  </button>
+                )
+              })}
             </div>
           </div>
 

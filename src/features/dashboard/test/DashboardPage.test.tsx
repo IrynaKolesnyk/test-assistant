@@ -86,4 +86,10 @@ describe('DashboardPage', () => {
     const viewAll = screen.getByRole('link', { name: /view all/i })
     expect(viewAll.getAttribute('href')).toBe('/chat')
   })
+
+  it('Translate quick-action is a link to /translate', () => {
+    renderDashboard()
+    const translateLink = screen.getByRole('link', { name: /translate/i })
+    expect(translateLink.getAttribute('href')).toBe('/translate')
+  })
 })
