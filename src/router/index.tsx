@@ -4,6 +4,7 @@ import ChatPage from '../features/chat/ChatPage'
 import SettingsPage from '../features/settings/SettingsPage'
 import DashboardPage from '../features/dashboard/DashboardPage'
 import ComingSoonPage from '../features/placeholder/ComingSoonPage'
+import NotFoundPage from '../features/placeholder/NotFoundPage'
 import TranslatePage from '../features/translate/TranslatePage'
 
 const router = createBrowserRouter([
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
       { path: 'recipes', element: <ComingSoonPage title="Recipes" /> },
       { path: 'notes', element: <ComingSoonPage title="Notes" /> },
       { path: 'history', element: <ComingSoonPage title="History" /> },
+      { path: '*', element: <NotFoundPage /> },
     ],
   },
 ])
