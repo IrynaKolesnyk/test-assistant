@@ -103,11 +103,36 @@ describe('TranslatePage — rendering', () => {
     expect(screen.queryByText(/mymemory free api/i)).toBeNull()
   })
 
-  it('renders pinned source language buttons', () => {
+  it('renders source language chip showing current source language', () => {
     renderPage()
-    expect(screen.getByRole('button', { name: 'Detect language' })).toBeInTheDocument()
-    // Both source and target have English; at least two should exist
-    expect(screen.getAllByRole('button', { name: 'English' }).length).toBeGreaterThanOrEqual(2)
+    expect(screen.getAllByText('Detect language').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('renders target language chip showing current target language', () => {
+    renderPage()
+    expect(screen.getAllByText('Spanish').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('source select contains all languages including Detect language', () => {
+    renderPage()
+    // combobox[0] = source select
+    const sourceSelect = screen.getAllByRole('combobox')[0]
+    expect(sourceSelect).toHaveValue('auto')
+    const options = Array.from(sourceSelect.querySelectorAll('option')).map((o) => o.value)
+    expect(options).toContain('auto')
+    expect(options).toContain('en')
+    expect(options).toContain('uk')
+  })
+
+  it('target select contains all non-auto languages', () => {
+    renderPage()
+    // combobox[1] = target select
+    const targetSelect = screen.getAllByRole('combobox')[1]
+    expect(targetSelect).toHaveValue('es')
+    const options = Array.from(targetSelect.querySelectorAll('option')).map((o) => o.value)
+    expect(options).not.toContain('auto')
+    expect(options).toContain('en')
+    expect(options).toContain('ja')
   })
 
   it('renders source textarea with placeholder', () => {
@@ -147,33 +172,52 @@ describe('TranslatePage — rendering', () => {
 
 // ── language selection ─────────────────────────────────────────────────────────
 describe('TranslatePage — language selection', () => {
-  it('clicking a source language button selects it', async () => {
+  it('changing source select updates source chip label', async () => {
     renderPage()
-    // getAllByRole returns [source-French, target-French]; click the first (source)
-    const frenchBtns = screen.getAllByRole('button', { name: 'French' })
-    await userEvent.click(frenchBtns[0])
-    // Panel label updates to "FRENCH"
+    await userEvent.selectOptions(screen.getAllByRole('combobox')[0], 'fr')
+    expect(screen.getAllByText('French').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('changing target select updates target chip label', async () => {
+    renderPage()
+    await userEvent.selectOptions(screen.getAllByRole('combobox')[1], 'ja')
+    expect(screen.getAllByText('Japanese').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('changing source select to German shows German chip', async () => {
+    renderPage()
+    await userEvent.selectOptions(screen.getAllByRole('combobox')[0], 'de')
+    expect(screen.getAllByText('German').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('changing target select to Chinese shows Chinese chip', async () => {
+    renderPage()
+    await userEvent.selectOptions(screen.getAllByRole('combobox')[1], 'zh')
+    expect(screen.getAllByText('Chinese (Simplified)').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('changing source select to Ukrainian shows Ukrainian chip', async () => {
+    renderPage()
+    await userEvent.selectOptions(screen.getAllByRole('combobox')[0], 'uk')
+    expect(screen.getAllByText('Ukrainian').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('changing target select to Arabic shows Arabic chip', async () => {
+    renderPage()
+    await userEvent.selectOptions(screen.getAllByRole('combobox')[1], 'ar')
+    expect(screen.getAllByText('Arabic').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('source panel header reflects selected source language', async () => {
+    renderPage()
+    await userEvent.selectOptions(screen.getAllByRole('combobox')[0], 'fr')
     expect(screen.getAllByText(/french/i).length).toBeGreaterThanOrEqual(1)
   })
 
-  it('clicking a target language button selects it', async () => {
+  it('target panel header reflects selected target language', async () => {
     renderPage()
-    await userEvent.click(screen.getByRole('button', { name: 'Japanese' }))
+    await userEvent.selectOptions(screen.getAllByRole('combobox')[1], 'ja')
     expect(screen.getAllByText(/japanese/i).length).toBeGreaterThanOrEqual(1)
-  })
-
-  it('selecting an extra source language via More dropdown shows highlighted chip', async () => {
-    renderPage()
-    const [sourceSelect] = screen.getAllByRole('combobox')
-    await userEvent.selectOptions(sourceSelect, 'uk')
-    expect(screen.getByRole('button', { name: 'Ukrainian' })).toBeInTheDocument()
-  })
-
-  it('selecting an extra target language via More dropdown shows highlighted chip', async () => {
-    renderPage()
-    const selects = screen.getAllByRole('combobox')
-    await userEvent.selectOptions(selects[1], 'uk')
-    expect(screen.getByRole('button', { name: 'Ukrainian' })).toBeInTheDocument()
   })
 })
 
@@ -209,20 +253,17 @@ describe('TranslatePage — char count & clear', () => {
 describe('TranslatePage — swap languages', () => {
   it('swap button is enabled when a non-auto source language is selected', async () => {
     renderPage()
-    // Click the source-side English button (first English button in the DOM)
-    const englishBtns = screen.getAllByRole('button', { name: 'English' })
-    await userEvent.click(englishBtns[0])
+    await userEvent.selectOptions(screen.getAllByRole('combobox')[0], 'en')
     expect(screen.getByTitle('Swap languages')).toBeEnabled()
   })
 
   it('swapping exchanges source and target languages', async () => {
     renderPage()
-    // Select English as source (first occurrence)
-    await userEvent.click(screen.getAllByRole('button', { name: 'English' })[0])
-    // Swap (English ↔ Spanish)
+    // Select English as source, Spanish is already target
+    await userEvent.selectOptions(screen.getAllByRole('combobox')[0], 'en')
     await userEvent.click(screen.getByTitle('Swap languages'))
-    // Spanish is now source — its panel label should appear
-    expect(screen.getAllByText(/spanish/i).length).toBeGreaterThanOrEqual(1)
+    // Spanish is now source chip
+    expect(screen.getAllByText('Spanish').length).toBeGreaterThanOrEqual(1)
   })
 
   it('swap does nothing when source is "Detect language"', async () => {

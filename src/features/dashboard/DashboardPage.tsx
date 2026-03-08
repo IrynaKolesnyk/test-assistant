@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { addConversation, addMessage } from '../chat/chatSlice'
 import { useSendMessageMutation } from '../chat/claudeApi'
@@ -96,24 +96,24 @@ export default function DashboardPage() {
 
   return (
     <div className="h-full overflow-y-auto bg-[var(--bg-base)]">
-      <div className="p-6 max-w-[1400px]">
+      <div className="p-4 md:p-6 max-w-[1400px]">
         {/* Welcome */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[var(--text-1)]">Welcome back, Alex! 👋</h1>
+        <div className="mb-5 md:mb-6">
+          <h1 className="text-xl md:text-2xl font-bold text-[var(--text-1)]">Welcome back, Alex! 👋</h1>
           <p className="text-[var(--text-2)] text-sm mt-1">
             Here's what's happening with your AI assistant today
           </p>
         </div>
 
         {/* Row 1: Quick Actions + Statistics */}
-        <div className="grid grid-cols-3 gap-5 mb-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-5 mb-4 md:mb-5">
           {/* Quick Actions */}
-          <div className="col-span-2 bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-5">
+          <div className="lg:col-span-2 bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-4 md:p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-[var(--text-1)]">⚡ Quick Actions</h2>
               <button className="text-[var(--text-3)] hover:text-[var(--text-1)] text-lg leading-none">⋯</button>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {QUICK_ACTIONS.map((a) => {
                 const inner = (
                   <>
@@ -126,9 +126,9 @@ export default function DashboardPage() {
                 )
                 const cls = "flex flex-col items-center p-3 rounded-xl bg-[var(--bg-base)] hover:bg-[var(--bg-hover)] border border-[var(--border)] hover:border-indigo-500/50 transition-all text-center"
                 return a.title === 'Translate' ? (
-                  <Link key={a.title} to="/translate" className={cls}>
+                  <NavLink key={a.title} to="/translate" end className={cls}>
                     {inner}
-                  </Link>
+                  </NavLink>
                 ) : (
                   <button key={a.title} className={cls}>
                     {inner}
@@ -139,7 +139,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Statistics */}
-          <div className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-5">
+          <div className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-4 md:p-5">
             <h2 className="text-sm font-semibold text-[var(--text-1)] mb-3">📊 Statistics</h2>
             <div>
               {STATS.map((s, i) => (
@@ -161,14 +161,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Row 2: AI Chat + Recent Activity */}
-        <div className="grid grid-cols-3 gap-5 mb-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-5 mb-4 md:mb-5">
           {/* AI Chat */}
-          <div className="col-span-2 bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-5 flex flex-col">
+          <div className="lg:col-span-2 bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-4 md:p-5 flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-[var(--text-1)]">💬 AI Chat</h2>
-              <Link to="/chat" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+              <NavLink to="/chat" end className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
                 View all →
-              </Link>
+              </NavLink>
             </div>
 
             <div className="space-y-3 mb-4 min-h-[150px]">
@@ -229,7 +229,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Recent Activity */}
-          <div className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-5">
+          <div className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-4 md:p-5">
             <h2 className="text-sm font-semibold text-[var(--text-1)] mb-4">⏰ Recent Activity</h2>
             <div className="space-y-3">
               {RECENT_ACTIVITY.map((item, i) => (
@@ -249,7 +249,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Row 3: Calendar + Today's Tasks */}
-        <div className="grid grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
           {/* Calendar */}
           <div className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-5">
             <div className="flex items-center justify-between mb-4">

@@ -181,44 +181,24 @@ export default function TranslatePage() {
 
       <div className="flex-1 flex flex-col overflow-hidden p-4 gap-3">
         {/* Language selector bar */}
-        <div className="flex items-center gap-2 bg-[var(--bg-panel)] border border-[var(--border)] rounded-xl px-4 py-2">
-          {/* Source language */}
-          <div className="flex-1 flex items-center gap-1 overflow-x-auto">
-            {['auto', 'en', 'es', 'fr', 'de', 'zh'].map((code) => {
-              const lang = LANGUAGES.find((l) => l.code === code)!
-              return (
-                <button
-                  key={code}
-                  onClick={() => setSourceLang(code)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                    sourceLang === code
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-[var(--text-2)] hover:bg-[var(--bg-base)] hover:text-[var(--text-1)]'
-                  }`}
-                >
-                  {lang.label}
-                </button>
-              )
-            })}
-            {/* If an "extra" language is selected as source, show it as a highlighted chip */}
-            {!['auto', 'en', 'es', 'fr', 'de', 'zh'].includes(sourceLang) && (
-              <button
-                onClick={() => setSourceLang('auto')}
-                className="px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors bg-indigo-600 text-white"
+        <div className="flex items-center gap-2 bg-[var(--bg-panel)] border border-[var(--border)] rounded-xl px-3 py-2">
+
+          {/* ── Source side ── */}
+          <div className="flex-1 flex items-center">
+            <div className="relative">
+              <span className="block px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-600 text-white whitespace-nowrap pointer-events-none">
+                {sourceLangLabel}
+              </span>
+              <select
+                value={sourceLang}
+                onChange={(e) => setSourceLang(e.target.value)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               >
-                {LANGUAGES.find((l) => l.code === sourceLang)?.label}
-              </button>
-            )}
-            <select
-              value=""
-              onChange={(e) => e.target.value && setSourceLang(e.target.value)}
-              className="appearance-none px-2 py-1.5 rounded-lg text-sm text-[var(--text-2)] bg-transparent hover:bg-[var(--bg-base)] cursor-pointer outline-none"
-            >
-              <option value="">More ▾</option>
-              {LANGUAGES.filter((l) => !['auto','en','es','fr','de','zh'].includes(l.code)).map((l) => (
-                <option key={l.code} value={l.code}>{l.label}</option>
-              ))}
-            </select>
+                {LANGUAGES.map((l) => (
+                  <option key={l.code} value={l.code}>{l.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Swap button */}
@@ -231,50 +211,29 @@ export default function TranslatePage() {
             ⇄
           </button>
 
-          {/* Target language */}
-          <div className="flex-1 flex items-center gap-1 justify-end overflow-x-auto">
-            <select
-              value=""
-              onChange={(e) => e.target.value && setTargetLang(e.target.value)}
-              className="appearance-none px-2 py-1.5 rounded-lg text-sm text-[var(--text-2)] bg-transparent hover:bg-[var(--bg-base)] cursor-pointer outline-none"
-            >
-              <option value="">More ▾</option>
-              {TARGET_LANGUAGES.filter((l) => !['en','es','fr','de','zh','ja'].includes(l.code)).map((l) => (
-                <option key={l.code} value={l.code}>{l.label}</option>
-              ))}
-            </select>
-            {/* If an "extra" language is selected, show it as a highlighted chip */}
-            {!['en','es','fr','de','zh','ja'].includes(targetLang) && (
-              <button
-                onClick={() => setTargetLang('en')}
-                className="px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors bg-indigo-600 text-white"
+          {/* ── Target side ── */}
+          <div className="flex-1 flex items-center justify-end">
+            <div className="relative">
+              <span className="block px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-600 text-white whitespace-nowrap pointer-events-none">
+                {targetLangLabel}
+              </span>
+              <select
+                value={targetLang}
+                onChange={(e) => setTargetLang(e.target.value)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               >
-                {TARGET_LANGUAGES.find((l) => l.code === targetLang)?.label}
-              </button>
-            )}
-            {['en', 'es', 'fr', 'de', 'zh', 'ja'].map((code) => {
-              const lang = TARGET_LANGUAGES.find((l) => l.code === code)!
-              return (
-                <button
-                  key={code}
-                  onClick={() => setTargetLang(code)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                    targetLang === code
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-[var(--text-2)] hover:bg-[var(--bg-base)] hover:text-[var(--text-1)]'
-                  }`}
-                >
-                  {lang.label}
-                </button>
-              )
-            })}
+                {TARGET_LANGUAGES.map((l) => (
+                  <option key={l.code} value={l.code}>{l.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
         {/* Translation panels */}
-        <div className="flex gap-3" style={{ height: '280px' }}>
+        <div className="flex flex-col md:flex-row gap-3 md:h-[280px]">
           {/* Source panel */}
-          <div className="flex-1 flex flex-col bg-[var(--bg-panel)] border border-[var(--border)] rounded-xl overflow-hidden">
+          <div className="flex-1 flex flex-col bg-[var(--bg-panel)] border border-[var(--border)] rounded-xl overflow-hidden min-h-[220px]">
             <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)]">
               <span className="text-xs font-medium text-[var(--text-3)] uppercase tracking-wider">
                 {sourceLangLabel}
@@ -318,7 +277,7 @@ export default function TranslatePage() {
           </div>
 
           {/* Target panel */}
-          <div className="flex-1 flex flex-col bg-[var(--bg-panel)] border border-[var(--border)] rounded-xl overflow-hidden">
+          <div className="flex-1 flex flex-col bg-[var(--bg-panel)] border border-[var(--border)] rounded-xl overflow-hidden min-h-[180px]">
             <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)]">
               <span className="text-xs font-medium text-[var(--text-3)] uppercase tracking-wider">
                 {targetLangLabel}

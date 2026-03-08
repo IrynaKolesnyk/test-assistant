@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { useAppSelector } from '../app/hooks'
 
 const NAV_MAIN = [
@@ -20,7 +20,6 @@ const NAV_OTHER = [
 ]
 
 export default function Sidebar() {
-  const location = useLocation()
   const conversations = useAppSelector((s) => s.chat.conversations)
   const chatBadge = conversations.length > 0 ? conversations.length : null
 
@@ -35,15 +34,17 @@ export default function Sidebar() {
     icon: string
     showBadge?: boolean
   }) {
-    const isActive = location.pathname === path
     return (
-      <Link
+      <NavLink
         to={path}
-        className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors ${
-          isActive
-            ? 'bg-[var(--nav-active)] text-[var(--nav-active-text)] font-medium'
-            : 'text-[var(--text-2)] hover:bg-[var(--nav-hover)] hover:text-[var(--text-1)]'
-        }`}
+        end
+        className={({ isActive }) =>
+          `flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors ${
+            isActive
+              ? 'bg-[var(--nav-active)] text-[var(--nav-active-text)] font-medium'
+              : 'text-[var(--text-2)] hover:bg-[var(--nav-hover)] hover:text-[var(--text-1)]'
+          }`
+        }
       >
         <span className="text-base leading-none">{icon}</span>
         <span className="flex-1">{label}</span>
@@ -52,7 +53,7 @@ export default function Sidebar() {
             {chatBadge > 9 ? '9+' : chatBadge}
           </span>
         )}
-      </Link>
+      </NavLink>
     )
   }
 
