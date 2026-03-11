@@ -52,13 +52,13 @@ describe('Header', () => {
   it('dispatches setTheme(light) when clicked in dark mode', async () => {
     const store = renderHeader('dark')
     await userEvent.click(screen.getByRole('button', { name: /toggle theme/i }))
-    expect((store.getState() as any).settings.theme).toBe('light')
+    expect(store.getState().settings.theme).toBe('light')
   })
 
   it('dispatches setTheme(dark) when clicked in light mode', async () => {
     const store = renderHeader('light')
     await userEvent.click(screen.getByRole('button', { name: /toggle theme/i }))
-    expect((store.getState() as any).settings.theme).toBe('dark')
+    expect(store.getState().settings.theme).toBe('dark')
   })
 
   it('renders home link pointing to /dashboard', () => {

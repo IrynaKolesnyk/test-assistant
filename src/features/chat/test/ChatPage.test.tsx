@@ -12,7 +12,7 @@ jest.mock('../claudeApi', () => ({
   claudeApi: {
     reducerPath: 'claudeApi',
     reducer: (s = {}) => s,
-    middleware: (_: any) => (next: any) => next,
+    middleware: () => (next: (a: unknown) => unknown) => next,
   },
 }))
 

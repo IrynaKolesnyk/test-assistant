@@ -81,7 +81,7 @@ describe('SettingsPage', () => {
   it('updates API key in store on input', async () => {
     const store = renderSettings()
     await userEvent.type(screen.getByPlaceholderText('sk-ant-...'), 'sk-test')
-    expect((store.getState() as any).settings.apiKey).toBe('sk-test')
+    expect(store.getState().settings.apiKey).toBe('sk-test')
   })
 
   it('updates system prompt in store on input', async () => {
@@ -89,6 +89,6 @@ describe('SettingsPage', () => {
     const textarea = screen.getByRole('textbox')
     await userEvent.clear(textarea)
     await userEvent.type(textarea, 'Be brief.')
-    expect((store.getState() as any).settings.systemPrompt).toBe('Be brief.')
+    expect(store.getState().settings.systemPrompt).toBe('Be brief.')
   })
 })

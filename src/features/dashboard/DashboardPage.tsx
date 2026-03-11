@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { addConversation, addMessage } from '../chat/chatSlice'
 import { useSendMessageMutation } from '../chat/claudeApi'
 import type { Conversation, Message } from '../../types'
-import { loadTasks, type Task } from '../tasks/TasksPage'
+import { loadTasks, type Task } from '../tasks/tasksStorage'
 
 const QUICK_ACTIONS = [
   { icon: '📅', title: 'Plan Day', subtitle: 'Create a schedule', bg: 'bg-red-500/20' },
