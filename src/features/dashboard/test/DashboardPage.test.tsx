@@ -103,6 +103,19 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Doctor appointment')).toBeInTheDocument()
   })
 
+  it('shows date-only task (no time) for today and displays "All day"', () => {
+    const now = new Date()
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const todayDate = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+    localStorage.setItem(
+      'ai-assistant:tasks',
+      JSON.stringify([{ id: '2', title: 'All day event', done: false, createdAt: Date.now(), dueDate: todayDate }]),
+    )
+    renderDashboard()
+    expect(screen.getByText('All day event')).toBeInTheDocument()
+    expect(screen.getByText('All day')).toBeInTheDocument()
+  })
+
   it('does not show tasks scheduled for a different day', () => {
     localStorage.setItem(
       'ai-assistant:tasks',

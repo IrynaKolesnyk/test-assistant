@@ -178,35 +178,45 @@ describe('TasksPage — remove task', () => {
 
 // ── due date ──────────────────────────────────────────────────────────────────
 describe('TasksPage — due date', () => {
-  it('renders the due date/time input', () => {
+  it('renders the due date and due time inputs', () => {
     renderPage()
-    expect(screen.getByLabelText('Due date and time')).toBeInTheDocument()
+    expect(screen.getByLabelText('Due date')).toBeInTheDocument()
+    expect(screen.getByLabelText('Due time')).toBeInTheDocument()
   })
 
   it('adds a task with a due date and shows it', async () => {
     renderPage()
     await userEvent.type(screen.getByPlaceholderText('Add a new task…'), 'Doctor')
-    await userEvent.type(screen.getByLabelText('Due date and time'), '2026-03-08T09:00')
+    await userEvent.type(screen.getByLabelText('Due date'), '2026-03-08')
+    await userEvent.type(screen.getByLabelText('Due time'), '09:00')
     await userEvent.click(screen.getByRole('button', { name: /add task/i }))
     expect(screen.getByText('Doctor')).toBeInTheDocument()
-    // due date is shown in the task row
     expect(screen.getByText(/📅/)).toBeInTheDocument()
+  })
+
+  it('adds a date-only task (no time)', async () => {
+    renderPage()
+    await userEvent.type(screen.getByPlaceholderText('Add a new task…'), 'Doctor')
+    await userEvent.type(screen.getByLabelText('Due date'), '2026-03-08')
+    await userEvent.click(screen.getByRole('button', { name: /add task/i }))
+    const stored = JSON.parse(localStorage.getItem('ai-assistant:tasks') ?? '[]')
+    expect(stored[0].dueDate).toBe('2026-03-08')
   })
 
   it('clears due date input after adding', async () => {
     renderPage()
     await userEvent.type(screen.getByPlaceholderText('Add a new task…'), 'Doctor')
-    await userEvent.type(screen.getByLabelText('Due date and time'), '2026-03-08T09:00')
+    await userEvent.type(screen.getByLabelText('Due date'), '2026-03-08')
+    await userEvent.type(screen.getByLabelText('Due time'), '09:00')
     await userEvent.click(screen.getByRole('button', { name: /add task/i }))
-    // The first datetime-local input (add form) should be cleared
-    const dateInputs = screen.getAllByLabelText('Due date and time')
-    expect(dateInputs[0]).toHaveValue('')
+    expect(screen.getByLabelText('Due date')).toHaveValue('')
   })
 
   it('saves due date to localStorage', async () => {
     renderPage()
     await userEvent.type(screen.getByPlaceholderText('Add a new task…'), 'Doctor')
-    await userEvent.type(screen.getByLabelText('Due date and time'), '2026-03-08T09:00')
+    await userEvent.type(screen.getByLabelText('Due date'), '2026-03-08')
+    await userEvent.type(screen.getByLabelText('Due time'), '09:00')
     await userEvent.click(screen.getByRole('button', { name: /add task/i }))
     const stored = JSON.parse(localStorage.getItem('ai-assistant:tasks') ?? '[]')
     expect(stored[0].dueDate).toBe('2026-03-08T09:00')
@@ -219,7 +229,8 @@ describe('TasksPage — due date', () => {
     localStorage.setItem('ai-assistant:tasks', JSON.stringify(tasks))
     renderPage()
     await userEvent.click(screen.getByRole('button', { name: /edit task/i }))
-    expect(screen.getByDisplayValue('2026-03-08T10:00')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('2026-03-08')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('10:00')).toBeInTheDocument()
   })
 
   it('task without due date shows no date badge', async () => {

@@ -5,7 +5,7 @@ export interface Task {
   title: string
   done: boolean
   createdAt: number
-  dueDate?: string // "YYYY-MM-DDTHH:mm" (datetime-local format)
+  dueDate?: string // "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm"
 }
 
 export const TASKS_STORAGE_KEY = 'ai-assistant:tasks'
@@ -19,7 +19,31 @@ export function loadTasks(): Task[] {
   }
 }
 
-function formatDueDate(dueDate: string): string {
+// Combine separate date / time strings into a single dueDate value.
+// Returns undefined if date is empty, "YYYY-MM-DD" if time is empty,
+// or "YYYY-MM-DDTHH:mm" when both are provided.
+function buildDueDate(date: string, time: string): string | undefined {
+  if (!date) return undefined
+  return time ? `${date}T${time}` : date
+}
+
+// Split an existing dueDate string into its date and time parts.
+function splitDueDate(dueDate: string | undefined): { date: string; time: string } {
+  if (!dueDate) return { date: '', time: '' }
+  const [date = '', time = ''] = dueDate.split('T')
+  return { date, time }
+}
+
+export function formatDueDate(dueDate: string): string {
+  if (dueDate.length === 10) {
+    // Date-only: compare parts to avoid UTC-offset issues
+    const [y, m, d] = dueDate.split('-').map(Number)
+    const now = new Date()
+    const isToday = now.getFullYear() === y && now.getMonth() + 1 === m && now.getDate() === d
+    if (isToday) return 'Today'
+    // Use noon local time to avoid date-shifting when formatting
+    return new Date(`${dueDate}T12:00`).toLocaleDateString([], { month: 'short', day: 'numeric' })
+  }
   const date = new Date(dueDate)
   const isToday = date.toDateString() === new Date().toDateString()
   const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -30,10 +54,12 @@ function formatDueDate(dueDate: string): string {
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>(loadTasks)
   const [newTitle, setNewTitle] = useState('')
-  const [newDueDate, setNewDueDate] = useState('')
+  const [newDate, setNewDate] = useState('')
+  const [newTime, setNewTime] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
-  const [editDueDate, setEditDueDate] = useState('')
+  const [editDate, setEditDate] = useState('')
+  const [editTime, setEditTime] = useState('')
   const editInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -54,11 +80,12 @@ export default function TasksPage() {
         title,
         done: false,
         createdAt: Date.now(),
-        dueDate: newDueDate || undefined,
+        dueDate: buildDueDate(newDate, newTime),
       },
     ])
     setNewTitle('')
-    setNewDueDate('')
+    setNewDate('')
+    setNewTime('')
   }
 
   function toggleTask(id: string) {
@@ -72,14 +99,18 @@ export default function TasksPage() {
   function startEdit(task: Task) {
     setEditingId(task.id)
     setEditValue(task.title)
-    setEditDueDate(task.dueDate ?? '')
+    const { date, time } = splitDueDate(task.dueDate)
+    setEditDate(date)
+    setEditTime(time)
   }
 
   function saveEdit(id: string) {
     const title = editValue.trim()
     if (!title) return
     setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, title, dueDate: editDueDate || undefined } : t)),
+      prev.map((t) =>
+        t.id === id ? { ...t, title, dueDate: buildDueDate(editDate, editTime) } : t,
+      ),
     )
     setEditingId(null)
   }
@@ -123,11 +154,22 @@ export default function TasksPage() {
           />
           <div className="flex gap-2">
             <input
-              type="datetime-local"
-              value={newDueDate}
-              onChange={(e) => setNewDueDate(e.target.value)}
-              aria-label="Due date and time"
+              type="date"
+              value={newDate}
+              onChange={(e) => {
+                setNewDate(e.target.value)
+                if (!e.target.value) setNewTime('')
+              }}
+              aria-label="Due date"
               className="flex-1 bg-[var(--bg-panel)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-2)] focus:outline-none focus:ring-2 focus:ring-indigo-500 [color-scheme:dark]"
+            />
+            <input
+              type="time"
+              value={newTime}
+              onChange={(e) => setNewTime(e.target.value)}
+              aria-label="Due time"
+              disabled={!newDate}
+              className="w-32 bg-[var(--bg-panel)] border border-[var(--border)] rounded-xl px-3 py-2.5 text-sm text-[var(--text-2)] focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-40 [color-scheme:dark]"
             />
             <button
               onClick={addTask}
@@ -162,7 +204,8 @@ export default function TasksPage() {
                   task={task}
                   isEditing={editingId === task.id}
                   editValue={editValue}
-                  editDueDate={editDueDate}
+                  editDate={editDate}
+                  editTime={editTime}
                   editInputRef={editingId === task.id ? editInputRef : undefined}
                   onToggle={() => toggleTask(task.id)}
                   onEdit={() => startEdit(task)}
@@ -170,9 +213,9 @@ export default function TasksPage() {
                   onCancel={cancelEdit}
                   onRemove={() => removeTask(task.id)}
                   onEditValueChange={setEditValue}
-                  onEditDueDateChange={setEditDueDate}
+                  onEditDateChange={(v) => { setEditDate(v); if (!v) setEditTime('') }}
+                  onEditTimeChange={setEditTime}
                   onEditKeyDown={(e) => handleEditKeyDown(e, task.id)}
-                  formatDueDate={formatDueDate}
                 />
               ))}
             </ul>
@@ -192,7 +235,8 @@ export default function TasksPage() {
                   task={task}
                   isEditing={editingId === task.id}
                   editValue={editValue}
-                  editDueDate={editDueDate}
+                  editDate={editDate}
+                  editTime={editTime}
                   editInputRef={editingId === task.id ? editInputRef : undefined}
                   onToggle={() => toggleTask(task.id)}
                   onEdit={() => startEdit(task)}
@@ -200,9 +244,9 @@ export default function TasksPage() {
                   onCancel={cancelEdit}
                   onRemove={() => removeTask(task.id)}
                   onEditValueChange={setEditValue}
-                  onEditDueDateChange={setEditDueDate}
+                  onEditDateChange={(v) => { setEditDate(v); if (!v) setEditTime('') }}
+                  onEditTimeChange={setEditTime}
                   onEditKeyDown={(e) => handleEditKeyDown(e, task.id)}
-                  formatDueDate={formatDueDate}
                 />
               ))}
             </ul>
@@ -217,7 +261,8 @@ interface TaskRowProps {
   task: Task
   isEditing: boolean
   editValue: string
-  editDueDate: string
+  editDate: string
+  editTime: string
   editInputRef?: React.RefObject<HTMLInputElement | null>
   onToggle: () => void
   onEdit: () => void
@@ -225,16 +270,17 @@ interface TaskRowProps {
   onCancel: () => void
   onRemove: () => void
   onEditValueChange: (v: string) => void
-  onEditDueDateChange: (v: string) => void
+  onEditDateChange: (v: string) => void
+  onEditTimeChange: (v: string) => void
   onEditKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void
-  formatDueDate: (d: string) => string
 }
 
 function TaskRow({
   task,
   isEditing,
   editValue,
-  editDueDate,
+  editDate,
+  editTime,
   editInputRef,
   onToggle,
   onEdit,
@@ -242,9 +288,9 @@ function TaskRow({
   onCancel,
   onRemove,
   onEditValueChange,
-  onEditDueDateChange,
+  onEditDateChange,
+  onEditTimeChange,
   onEditKeyDown,
-  formatDueDate,
 }: TaskRowProps) {
   return (
     <li className="flex items-start gap-3 px-4 py-3 rounded-xl bg-[var(--bg-panel)] border border-[var(--border)] group">
@@ -272,13 +318,23 @@ function TaskRow({
             onKeyDown={onEditKeyDown}
             className="w-full bg-[var(--bg-input)] border border-indigo-500 rounded-lg px-2 py-1 text-sm text-[var(--text-1)] focus:outline-none"
           />
-          <input
-            type="datetime-local"
-            value={editDueDate}
-            onChange={(e) => onEditDueDateChange(e.target.value)}
-            aria-label="Due date and time"
-            className="w-full bg-[var(--bg-input)] border border-[var(--border)] rounded-lg px-2 py-1 text-sm text-[var(--text-2)] focus:outline-none [color-scheme:dark]"
-          />
+          <div className="flex gap-2">
+            <input
+              type="date"
+              value={editDate}
+              onChange={(e) => onEditDateChange(e.target.value)}
+              aria-label="Edit due date"
+              className="flex-1 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg px-2 py-1 text-sm text-[var(--text-2)] focus:outline-none [color-scheme:dark]"
+            />
+            <input
+              type="time"
+              value={editTime}
+              onChange={(e) => onEditTimeChange(e.target.value)}
+              aria-label="Edit due time"
+              disabled={!editDate}
+              className="w-28 bg-[var(--bg-input)] border border-[var(--border)] rounded-lg px-2 py-1 text-sm text-[var(--text-2)] focus:outline-none disabled:opacity-40 [color-scheme:dark]"
+            />
+          </div>
           <div className="flex gap-1">
             <button
               onClick={onSave}

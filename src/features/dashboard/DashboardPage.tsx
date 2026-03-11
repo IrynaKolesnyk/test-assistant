@@ -352,10 +352,12 @@ export default function DashboardPage() {
                       </p>
                       {task.dueDate && (
                         <p className="text-xs text-[var(--text-3)]">
-                          {new Date(task.dueDate).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
+                          {task.dueDate.length > 10
+                            ? new Date(task.dueDate).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })
+                            : 'All day'}
                         </p>
                       )}
                     </div>
