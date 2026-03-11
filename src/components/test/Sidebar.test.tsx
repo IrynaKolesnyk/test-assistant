@@ -52,7 +52,7 @@ describe('Sidebar', () => {
 
   it('renders user profile', () => {
     renderSidebar()
-    expect(screen.getByText('Alex Johnson')).toBeInTheDocument()
+    expect(screen.getByText('Iryna Kolesnyk')).toBeInTheDocument()
   })
 
   it('does not show chat badge when no conversations', () => {

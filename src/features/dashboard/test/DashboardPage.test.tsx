@@ -38,7 +38,7 @@ function renderDashboard() {
 describe('DashboardPage', () => {
   it('renders welcome message', () => {
     renderDashboard()
-    expect(screen.getByText(/welcome back, alex/i)).toBeInTheDocument()
+    expect(screen.getByText(/welcome back, iryna/i)).toBeInTheDocument()
   })
 
   it('renders Quick Actions widget', () => {

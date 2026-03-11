@@ -115,7 +115,7 @@ export default function Sidebar() {
             AJ
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-[var(--text-1)] truncate">Alex Johnson</p>
+            <p className="text-sm font-medium text-[var(--text-1)] truncate">Iryna Kolesnyk</p>
             <p className="text-xs text-[#10b981]">● Online</p>
           </div>
           <button className="text-[var(--text-3)] hover:text-[var(--text-1)] text-lg leading-none">⋯</button>

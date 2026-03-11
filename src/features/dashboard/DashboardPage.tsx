@@ -129,7 +129,7 @@ export default function DashboardPage() {
       <div className="p-4 md:p-6 max-w-[1400px]">
         {/* Welcome */}
         <div className="mb-5 md:mb-6">
-          <h1 className="text-xl md:text-2xl font-bold text-[var(--text-1)]">Welcome back, Alex! 👋</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-[var(--text-1)]">Welcome back, Iryna! 👋</h1>
           <p className="text-[var(--text-2)] text-sm mt-1">
             Here's what's happening with your AI assistant today
           </p>
