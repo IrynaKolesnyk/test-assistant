@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { addConversation, addMessage } from '../chat/chatSlice'
 import { useSendMessageMutation } from '../chat/claudeApi'
 import type { Conversation, Message } from '../../types'
+import { loadTasks, type Task } from '../tasks/TasksPage'
 
 const QUICK_ACTIONS = [
   { icon: '📅', title: 'Plan Day', subtitle: 'Create a schedule', bg: 'bg-red-500/20' },
@@ -29,22 +30,28 @@ const RECENT_ACTIVITY = [
   { icon: '💬', title: 'New Conversation', desc: 'Started new AI chat activity', time: '3 hours ago' },
 ]
 
-const TASKS = [
-  { title: 'Morning workout', time: '09:00 AM', dot: 'bg-green-500', done: true },
-  { title: 'Team meeting', time: '10:30 AM', dot: 'bg-yellow-500', done: false },
-  { title: 'Review documents', time: '02:00 PM', dot: 'bg-blue-500', done: false },
-  { title: 'Prepare presentation', time: '04:00 PM', dot: 'bg-red-500', done: false },
-]
+function loadTodaysTasks(): Task[] {
+  const today = new Date().toISOString().slice(0, 10)
+  return loadTasks().filter((t) => t.dueDate?.slice(0, 10) === today)
+}
 
 const CAL_HEADERS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
-// December 2024 starts on Sunday
-const CAL_DAYS = [
-  [1, 2, 3, 4, 5, 6, 7],
-  [8, 9, 10, 11, 12, 13, 14],
-  [15, 16, 17, 18, 19, 20, 21],
-  [22, 23, 24, 25, 26, 27, 28],
-  [29, 30, 31, null, null, null, null],
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ]
+
+function buildCalendarWeeks(year: number, month: number): (number | null)[][] {
+  const firstDay = new Date(year, month, 1).getDay()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const days: (number | null)[] = []
+  for (let i = 0; i < firstDay; i++) days.push(null)
+  for (let d = 1; d <= daysInMonth; d++) days.push(d)
+  while (days.length % 7 !== 0) days.push(null)
+  const weeks: (number | null)[][] = []
+  for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7))
+  return weeks
+}
 
 export default function DashboardPage() {
   const dispatch = useAppDispatch()
@@ -52,6 +59,27 @@ export default function DashboardPage() {
   const settings = useAppSelector((s) => s.settings)
   const [sendMessage] = useSendMessageMutation()
   const [chatInput, setChatInput] = useState('')
+
+  const [todaysTasks] = useState<Task[]>(loadTodaysTasks)
+  const today = useMemo(() => new Date(), [])
+  const [calDate, setCalDate] = useState({ year: today.getFullYear(), month: today.getMonth() })
+  const calWeeks = useMemo(() => buildCalendarWeeks(calDate.year, calDate.month), [calDate])
+  const calLabel = `${MONTH_NAMES[calDate.month]} ${calDate.year}`
+  const todayDay =
+    calDate.year === today.getFullYear() && calDate.month === today.getMonth()
+      ? today.getDate()
+      : null
+
+  function prevMonth() {
+    setCalDate(({ year, month }) =>
+      month === 0 ? { year: year - 1, month: 11 } : { year, month: month - 1 },
+    )
+  }
+  function nextMonth() {
+    setCalDate(({ year, month }) =>
+      month === 11 ? { year: year + 1, month: 0 } : { year, month: month + 1 },
+    )
+  }
 
   const activeConversation =
     conversations.find((c) => c.id === activeConversationId) ?? conversations[0] ?? null
@@ -255,9 +283,9 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-[var(--text-1)]">📅 Calendar</h2>
               <div className="flex items-center gap-2">
-                <button className="text-[var(--text-3)] hover:text-[var(--text-1)] transition-colors">‹</button>
-                <span className="text-xs text-[var(--text-2)]">December 2024</span>
-                <button className="text-[var(--text-3)] hover:text-[var(--text-1)] transition-colors">›</button>
+                <button onClick={prevMonth} className="text-[var(--text-3)] hover:text-[var(--text-1)] transition-colors">‹</button>
+                <span className="text-xs text-[var(--text-2)]">{calLabel}</span>
+                <button onClick={nextMonth} className="text-[var(--text-3)] hover:text-[var(--text-1)] transition-colors">›</button>
               </div>
             </div>
             <div className="grid grid-cols-7 gap-1 text-center">
@@ -266,13 +294,13 @@ export default function DashboardPage() {
                   {d}
                 </div>
               ))}
-              {CAL_DAYS.flat().map((day, i) => (
+              {calWeeks.flat().map((day, i) => (
                 <div
                   key={i}
                   className={`text-xs py-1.5 rounded-lg transition-colors ${
                     !day
                       ? ''
-                      : day === 18
+                      : day === todayDay
                       ? 'bg-indigo-600 text-white font-semibold'
                       : 'text-[var(--text-2)] hover:bg-[var(--border)] hover:text-[var(--text-1)] cursor-pointer'
                   }`}
@@ -285,36 +313,59 @@ export default function DashboardPage() {
 
           {/* Today's Tasks */}
           <div className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-5">
-            <h2 className="text-sm font-semibold text-[var(--text-1)] mb-4">✓ Today's Tasks</h2>
-            <div className="space-y-2">
-              {TASKS.map((task, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-base)]"
-                >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-[var(--text-1)]">✓ Today's Tasks</h2>
+              <NavLink to="/tasks" end className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+                View all →
+              </NavLink>
+            </div>
+            {todaysTasks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <p className="text-sm text-[var(--text-3)]">No tasks scheduled for today</p>
+                <NavLink to="/tasks" end className="text-xs text-indigo-400 hover:text-indigo-300 mt-2 transition-colors">
+                  Add tasks →
+                </NavLink>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {todaysTasks.map((task) => (
                   <div
-                    className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border-2 ${
-                      task.done
-                        ? 'border-indigo-500 bg-indigo-600'
-                        : 'border-[var(--text-4)]'
-                    }`}
+                    key={task.id}
+                    className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-base)]"
                   >
-                    {task.done && <span className="text-white text-xs leading-none">✓</span>}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={`text-sm ${
-                        task.done ? 'line-through text-[var(--text-3)]' : 'text-[var(--text-1)]'
+                    <div
+                      className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border-2 ${
+                        task.done ? 'border-indigo-500 bg-indigo-600' : 'border-[var(--text-4)]'
                       }`}
                     >
-                      {task.title}
-                    </p>
-                    <p className="text-xs text-[var(--text-3)]">{task.time}</p>
+                      {task.done && <span className="text-white text-xs leading-none">✓</span>}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={`text-sm ${
+                          task.done ? 'line-through text-[var(--text-3)]' : 'text-[var(--text-1)]'
+                        }`}
+                      >
+                        {task.title}
+                      </p>
+                      {task.dueDate && (
+                        <p className="text-xs text-[var(--text-3)]">
+                          {new Date(task.dueDate).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </p>
+                      )}
+                    </div>
+                    <div
+                      className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                        task.done ? 'bg-indigo-500' : 'bg-yellow-500'
+                      }`}
+                    />
                   </div>
-                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${task.dot}`} />
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

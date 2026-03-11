@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.app.json",
   "compilerOptions": {
+    "composite": true,
     "types": ["jest", "@testing-library/jest-dom", "node"],
     "esModuleInterop": true,
     "verbatimModuleSyntax": false,

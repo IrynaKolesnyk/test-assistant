@@ -15,6 +15,10 @@ jest.mock('../../chat/claudeApi', () => ({
   },
 }))
 
+beforeEach(() => {
+  localStorage.clear()
+})
+
 function makeStore() {
   return configureStore({
     reducer: { chat: chatReducer, settings: settingsReducer },
@@ -69,22 +73,50 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Task Completed')).toBeInTheDocument()
   })
 
-  it('renders Calendar widget', () => {
+  it('renders Calendar widget showing current month and year', () => {
+    const MONTH_NAMES = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ]
+    const now = new Date()
+    const expectedLabel = `${MONTH_NAMES[now.getMonth()]} ${now.getFullYear()}`
     renderDashboard()
     expect(screen.getByText(/calendar/i)).toBeInTheDocument()
-    expect(screen.getByText('December 2024')).toBeInTheDocument()
+    expect(screen.getByText(expectedLabel)).toBeInTheDocument()
   })
 
-  it('renders Today\'s Tasks widget', () => {
+  it('renders Today\'s Tasks widget with empty state when no tasks scheduled', () => {
     renderDashboard()
     expect(screen.getByText(/today.s tasks/i)).toBeInTheDocument()
-    expect(screen.getByText('Morning workout')).toBeInTheDocument()
+    expect(screen.getByText(/no tasks scheduled for today/i)).toBeInTheDocument()
+  })
+
+  it('shows tasks from localStorage scheduled for today', () => {
+    const now = new Date()
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const todayStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T09:00`
+    localStorage.setItem(
+      'ai-assistant:tasks',
+      JSON.stringify([{ id: '1', title: 'Doctor appointment', done: false, createdAt: Date.now(), dueDate: todayStr }]),
+    )
+    renderDashboard()
+    expect(screen.getByText('Doctor appointment')).toBeInTheDocument()
+  })
+
+  it('does not show tasks scheduled for a different day', () => {
+    localStorage.setItem(
+      'ai-assistant:tasks',
+      JSON.stringify([{ id: '1', title: 'Future task', done: false, createdAt: Date.now(), dueDate: '2099-12-31T09:00' }]),
+    )
+    renderDashboard()
+    expect(screen.queryByText('Future task')).toBeNull()
   })
 
   it('renders "View all" link to /chat', () => {
     renderDashboard()
-    const viewAll = screen.getByRole('link', { name: /view all/i })
-    expect(viewAll.getAttribute('href')).toBe('/chat')
+    const viewAllLinks = screen.getAllByRole('link', { name: /view all/i })
+    const chatLink = viewAllLinks.find((l) => l.getAttribute('href') === '/chat')
+    expect(chatLink).toBeDefined()
   })
 
   it('Translate quick-action is a link to /translate', () => {

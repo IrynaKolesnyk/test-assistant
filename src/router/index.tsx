@@ -6,6 +6,7 @@ import DashboardPage from '../features/dashboard/DashboardPage'
 import ComingSoonPage from '../features/placeholder/ComingSoonPage'
 import NotFoundPage from '../features/placeholder/NotFoundPage'
 import TranslatePage from '../features/translate/TranslatePage'
+import TasksPage from '../features/tasks/TasksPage'
 
 const router = createBrowserRouter([
   {
@@ -16,7 +17,7 @@ const router = createBrowserRouter([
       { path: 'dashboard', element: <DashboardPage /> },
       { path: 'chat', element: <ChatPage /> },
       { path: 'settings', element: <SettingsPage /> },
-      { path: 'tasks', element: <ComingSoonPage title="Tasks" /> },
+      { path: 'tasks', element: <TasksPage /> },
       { path: 'calendar', element: <ComingSoonPage title="Calendar" /> },
       { path: 'translate', element: <TranslatePage /> },
       { path: 'recipes', element: <ComingSoonPage title="Recipes" /> },
