@@ -31,7 +31,9 @@ const RECENT_ACTIVITY = [
 ]
 
 function loadTodaysTasks(): Task[] {
-  const today = new Date().toISOString().slice(0, 10)
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
   return loadTasks().filter((t) => t.dueDate?.slice(0, 10) === today)
 }
 

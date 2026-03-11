@@ -7,6 +7,7 @@ import ComingSoonPage from '../features/placeholder/ComingSoonPage'
 import NotFoundPage from '../features/placeholder/NotFoundPage'
 import TranslatePage from '../features/translate/TranslatePage'
 import TasksPage from '../features/tasks/TasksPage'
+import RecipesPage from '../features/recipes/RecipesPage'
 
 const router = createBrowserRouter([
   {
@@ -20,7 +21,7 @@ const router = createBrowserRouter([
       { path: 'tasks', element: <TasksPage /> },
       { path: 'calendar', element: <ComingSoonPage title="Calendar" /> },
       { path: 'translate', element: <TranslatePage /> },
-      { path: 'recipes', element: <ComingSoonPage title="Recipes" /> },
+      { path: 'recipes', element: <RecipesPage /> },
       { path: 'notes', element: <ComingSoonPage title="Notes" /> },
       { path: 'history', element: <ComingSoonPage title="History" /> },
       { path: '*', element: <NotFoundPage /> },
