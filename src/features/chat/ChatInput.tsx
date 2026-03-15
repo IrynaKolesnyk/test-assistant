@@ -30,6 +30,7 @@ export default function ChatInput({ onSend, disabled = false }: Props) {
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={disabled}
+          aria-label="Message"
           placeholder="Message Claude... (Enter to send, Shift+Enter for newline)"
           rows={1}
           className="flex-1 resize-none rounded-xl border border-[var(--border)] bg-[var(--bg-input)] px-4 py-4 md:py-3 text-base md:text-sm text-[var(--text-1)] placeholder-[var(--text-3)] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed max-h-40 overflow-y-auto"

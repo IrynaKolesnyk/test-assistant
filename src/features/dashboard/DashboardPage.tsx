@@ -211,6 +211,7 @@ export default function DashboardPage() {
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleChatSend()}
+                aria-label="Message"
                 placeholder="Type your message..."
                 disabled={!apiKey}
                 className="flex-1 bg-[var(--bg-input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-1)] placeholder-[var(--text-3)] focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
@@ -218,6 +219,7 @@ export default function DashboardPage() {
               <button
                 onClick={handleChatSend}
                 disabled={!chatInput.trim() || !apiKey}
+                aria-label="Send message"
                 className="w-10 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white flex items-center justify-center transition-colors flex-shrink-0"
               >
                 ➤
@@ -252,12 +254,12 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-[var(--text-1)]">📅 Calendar</h2>
               <div className="flex items-center gap-2">
-                <button onClick={prevMonth} className="text-[var(--text-3)] hover:text-[var(--text-1)] transition-colors">‹</button>
+                <button onClick={prevMonth} aria-label="Previous month" className="text-[var(--text-3)] hover:text-[var(--text-1)] transition-colors">‹</button>
                 <span className="text-xs text-[var(--text-2)]">{calLabel}</span>
-                <button onClick={nextMonth} className="text-[var(--text-3)] hover:text-[var(--text-1)] transition-colors">›</button>
+                <button onClick={nextMonth} aria-label="Next month" className="text-[var(--text-3)] hover:text-[var(--text-1)] transition-colors">›</button>
               </div>
             </div>
-            <div className="grid grid-cols-7 gap-1 text-center">
+            <div role="grid" aria-label={calLabel} className="grid grid-cols-7 gap-1 text-center">
               {CAL_HEADERS.map((day) => (
                 <div key={day} className="text-xs text-[var(--text-3)] py-1 font-medium">
                   {day}
@@ -266,6 +268,8 @@ export default function DashboardPage() {
               {calWeeks.flat().map((day, index) => (
                 <div
                   key={index}
+                  aria-label={day ? `${MONTH_NAMES[calDate.month]} ${day}` : undefined}
+                  {...(day === todayDay ? { 'aria-current': 'date' as const } : {})}
                   className={`text-xs py-1.5 rounded-lg transition-colors ${
                     !day
                       ? ''

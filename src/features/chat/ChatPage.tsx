@@ -26,7 +26,7 @@ export default function ChatPage() {
         ? String(error.data)
         : 'An error occurred. Please try again.'
     return (
-      <div className="flex-shrink-0 bg-red-500/10 border-b border-red-500/20 px-6 py-3 text-sm text-red-500">
+      <div role="alert" className="flex-shrink-0 bg-red-500/10 border-b border-red-500/20 px-6 py-3 text-sm text-red-500">
         {message}
       </div>
     )
@@ -42,7 +42,7 @@ export default function ChatPage() {
       </header>
 
       {apiKeyMissing && (
-        <div className="flex-shrink-0 bg-amber-500/10 border-b border-amber-500/20 px-6 py-3 text-sm text-amber-500">
+        <div role="alert" className="flex-shrink-0 bg-amber-500/10 border-b border-amber-500/20 px-6 py-3 text-sm text-amber-500">
           ⚠ No API key set.{' '}
           <a href="/settings" className="underline font-medium hover:text-amber-400">
             Go to Settings

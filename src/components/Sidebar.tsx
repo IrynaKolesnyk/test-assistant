@@ -39,17 +39,17 @@ export default function Sidebar() {
         to={path}
         end
         className={({ isActive }) =>
-          `flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors ${
+          `flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
             isActive
               ? 'bg-[var(--nav-active)] text-[var(--nav-active-text)] font-medium'
               : 'text-[var(--text-2)] hover:bg-[var(--nav-hover)] hover:text-[var(--text-1)]'
           }`
         }
       >
-        <span className="text-base leading-none">{icon}</span>
+        <span className="text-base leading-none" aria-hidden="true">{icon}</span>
         <span className="flex-1">{label}</span>
         {showBadge && chatBadge && (
-          <span className="w-5 h-5 rounded-full bg-indigo-500 text-white text-xs flex items-center justify-center font-medium">
+          <span className="w-5 h-5 rounded-full bg-indigo-500 text-white text-xs flex items-center justify-center font-medium" aria-label={`${chatBadge} conversations`}>
             {chatBadge > 9 ? '9+' : chatBadge}
           </span>
         )}
@@ -73,7 +73,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 overflow-y-auto space-y-5">
+      <nav className="flex-1 px-3 overflow-y-auto space-y-5" aria-label="Main navigation">
         <div>
           <p className="text-xs font-semibold text-[var(--text-4)] uppercase tracking-wider px-3 mb-2">
             Main
@@ -118,7 +118,7 @@ export default function Sidebar() {
             <p className="text-sm font-medium text-[var(--text-1)] truncate">Iryna Kolesnyk</p>
             <p className="text-xs text-[#10b981]">● Online</p>
           </div>
-          <button className="text-[var(--text-3)] hover:text-[var(--text-1)] text-lg leading-none">⋯</button>
+          <button aria-label="User menu" className="text-[var(--text-3)] hover:text-[var(--text-1)] text-lg leading-none">⋯</button>
         </div>
       </div>
     </aside>

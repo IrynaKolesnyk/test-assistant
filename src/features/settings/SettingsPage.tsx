@@ -29,6 +29,7 @@ export default function SettingsPage() {
             type="password"
             value={settings.apiKey}
             onChange={(e) => dispatch(setApiKey(e.target.value))}
+            aria-label="Anthropic API key"
             placeholder="sk-ant-..."
             className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-input)] px-4 py-2.5 text-sm text-[var(--text-1)] placeholder-[var(--text-3)] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           />
@@ -61,6 +62,7 @@ export default function SettingsPage() {
           <select
             value={settings.model}
             onChange={(e) => dispatch(setModel(e.target.value as ModelId))}
+            aria-label="Model"
             className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-input)] px-4 py-2.5 text-sm text-[var(--text-1)] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           >
             {MODELS.map((model) => (
@@ -79,6 +81,7 @@ export default function SettingsPage() {
           <textarea
             value={settings.systemPrompt}
             onChange={(e) => dispatch(setSystemPrompt(e.target.value))}
+            aria-label="System prompt"
             rows={5}
             className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-input)] px-4 py-2.5 text-sm text-[var(--text-1)] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
           />

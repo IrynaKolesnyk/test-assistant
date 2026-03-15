@@ -8,9 +8,9 @@ export default function Message({ message }: Props) {
   const isUser = message.role === 'user'
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`} aria-label={isUser ? 'User message' : 'AI message'}>
       {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold mr-3 flex-shrink-0 mt-1">
+        <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold mr-3 flex-shrink-0 mt-1" aria-hidden="true">
           AI
         </div>
       )}
@@ -24,7 +24,7 @@ export default function Message({ message }: Props) {
         {message.content}
       </div>
       {isUser && (
-        <div className="w-8 h-8 rounded-full bg-[var(--border)] flex items-center justify-center text-[var(--text-2)] text-xs font-bold ml-3 flex-shrink-0 mt-1">
+        <div className="w-8 h-8 rounded-full bg-[var(--border)] flex items-center justify-center text-[var(--text-2)] text-xs font-bold ml-3 flex-shrink-0 mt-1" aria-hidden="true">
           U
         </div>
       )}

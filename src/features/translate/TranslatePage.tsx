@@ -194,7 +194,7 @@ export default function TranslatePage() {
       )}
 
       {error && (
-        <div className="flex-shrink-0 bg-red-500/10 border-b border-red-500/20 px-6 py-3 text-sm text-red-400">
+        <div role="alert" className="flex-shrink-0 bg-red-500/10 border-b border-red-500/20 px-6 py-3 text-sm text-red-400">
           ⚠ {error}
         </div>
       )}
@@ -212,6 +212,7 @@ export default function TranslatePage() {
               <select
                 value={sourceLang}
                 onChange={(e) => setSourceLang(e.target.value)}
+                aria-label="Source language"
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               >
                 {LANGUAGES.map((language) => (
@@ -225,6 +226,7 @@ export default function TranslatePage() {
           <button
             onClick={swapLanguages}
             disabled={sourceLang === 'auto'}
+            aria-label="Swap languages"
             title="Swap languages"
             className="w-9 h-9 flex items-center justify-center rounded-full text-[var(--text-2)] hover:bg-[var(--bg-base)] hover:text-[var(--text-1)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
           >
@@ -240,6 +242,7 @@ export default function TranslatePage() {
               <select
                 value={targetLang}
                 onChange={(e) => setTargetLang(e.target.value)}
+                aria-label="Target language"
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               >
                 {TARGET_LANGUAGES.map((language) => (
@@ -262,6 +265,7 @@ export default function TranslatePage() {
                 <button
                   onClick={clearSource}
                   className="text-[var(--text-3)] hover:text-[var(--text-1)] text-sm transition-colors"
+                  aria-label="Clear source text"
                   title="Clear"
                 >
                   ✕
@@ -272,6 +276,7 @@ export default function TranslatePage() {
               value={sourceText}
               onChange={(e) => setSourceText(e.target.value.slice(0, maxChars))}
               onKeyDown={handleKeyDown}
+              aria-label="Source text"
               placeholder="Enter text"
               className="flex-1 resize-none bg-transparent text-[var(--text-1)] placeholder-[var(--text-4)] px-4 py-3 text-sm outline-none"
             />
@@ -312,7 +317,7 @@ export default function TranslatePage() {
                 </button>
               )}
             </div>
-            <div className="flex-1 px-4 py-3 overflow-y-auto">
+            <div className="flex-1 px-4 py-3 overflow-y-auto" aria-live="polite" aria-busy={loading} aria-label="Translation result">
               {loading && !translatedText ? (
                 <div className="flex items-center gap-2 text-[var(--text-3)] text-sm">
                   <span className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin" />

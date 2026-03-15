@@ -6,7 +6,7 @@ export default function NotFoundPage() {
 
   return (
     <div className="flex flex-col items-center justify-center h-full gap-6 px-6 text-center">
-      <div className="text-[120px] leading-none select-none">🤖</div>
+      <div className="text-[120px] leading-none select-none" aria-hidden="true">🤖</div>
 
       <div>
         <h1 className="text-6xl font-bold text-indigo-500 mb-2">404</h1>

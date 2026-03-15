@@ -388,7 +388,7 @@ Keep it concise and practical.`
 
       {/* Error banner */}
       {error && (
-        <div className="flex-shrink-0 bg-red-500/10 border-b border-red-500/20 px-6 py-3 text-sm text-red-400">
+        <div role="alert" className="flex-shrink-0 bg-red-500/10 border-b border-red-500/20 px-6 py-3 text-sm text-red-400">
           ⚠ {error}
         </div>
       )}
@@ -402,6 +402,7 @@ Keep it concise and practical.`
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
+              aria-label="Search recipes"
               placeholder={
                 usingFreeApi
                   ? 'Search by dish name or ingredient (e.g. "pasta", "chicken")'
@@ -412,6 +413,7 @@ Keep it concise and practical.`
             {query && (
               <button
                 onClick={clearAll}
+                aria-label="Clear input"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-3)] hover:text-[var(--text-1)] transition-colors"
               >
                 ✕
@@ -436,8 +438,8 @@ Keep it concise and practical.`
 
         {/* Loading spinner (free API) */}
         {loading && usingFreeApi && (
-          <div className="flex items-center justify-center py-16 text-[var(--text-3)]">
-            <span className="w-5 h-5 border-2 border-current/30 border-t-current rounded-full animate-spin mr-3" />
+          <div role="status" className="flex items-center justify-center py-16 text-[var(--text-3)]">
+            <span className="w-5 h-5 border-2 border-current/30 border-t-current rounded-full animate-spin mr-3" aria-hidden="true" />
             Searching recipes…
           </div>
         )}
