@@ -1,58 +1,36 @@
-import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { addConversation, addMessage } from './chatSlice'
-import { useSendMessageMutation } from './claudeApi'
+import { useAppSelector } from '../../app/hooks'
+import { useSendChat } from './useSendChat'
 import ChatInput from './ChatInput'
 import MessageList from './MessageList'
-import type { Conversation, Message } from '../../types'
 
 export default function ChatPage() {
-  const dispatch = useAppDispatch()
-  const { conversations, activeConversationId, streaming } = useAppSelector(
-    (s) => s.chat,
-  )
-  const settings = useAppSelector((s) => s.settings)
-  const [sendMessage, { error }] = useSendMessageMutation()
+  const { conversations, activeConversationId } = useAppSelector((state) => state.chat)
+  const settings = useAppSelector((state) => state.settings)
+  const { sendChat, streaming, error } = useSendChat()
 
   const activeConversation =
-    conversations.find((c) => c.id === activeConversationId) ?? null
+    conversations.find((conversation) => conversation.id === activeConversationId) ?? null
 
   async function handleSend(text: string) {
-    let convId = activeConversationId
-
-    if (!convId) {
-      const newConv: Conversation = {
-        id: crypto.randomUUID(),
-        title: text.slice(0, 60),
-        messages: [],
-        createdAt: Date.now(),
-      }
-      dispatch(addConversation(newConv))
-      convId = newConv.id
-    }
-
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      role: 'user',
-      content: text,
-      createdAt: Date.now(),
-    }
-    dispatch(addMessage({ conversationId: convId, message: userMessage }))
-
-    const conv = conversations.find((c) => c.id === convId)
-    const history = conv
-      ? conv.messages.map((m) => ({ role: m.role, content: m.content }))
-      : []
-    history.push({ role: 'user', content: text })
-
-    await sendMessage({
-      conversationId: convId,
-      messages: history,
-      model: settings.model,
-      systemPrompt: settings.systemPrompt,
-    })
+    await sendChat(text)
   }
 
   const apiKeyMissing = !settings.apiKey
+
+  function renderError() {
+    if (!error) return null
+    const message =
+      'error' in error
+        ? String(error.error)
+        : 'data' in error
+        ? String(error.data)
+        : 'An error occurred. Please try again.'
+    return (
+      <div className="flex-shrink-0 bg-red-500/10 border-b border-red-500/20 px-6 py-3 text-sm text-red-500">
+        {message}
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col h-full bg-[var(--bg-base)]">
@@ -73,11 +51,7 @@ export default function ChatPage() {
         </div>
       )}
 
-      {error && (
-        <div className="flex-shrink-0 bg-red-500/10 border-b border-red-500/20 px-6 py-3 text-sm text-red-500">
-          {'error' in error ? String(error.error) : 'An error occurred. Please try again.'}
-        </div>
-      )}
+      {renderError()}
 
       <MessageList messages={activeConversation?.messages ?? []} streaming={streaming} />
       <ChatInput onSend={handleSend} disabled={streaming || apiKeyMissing} />

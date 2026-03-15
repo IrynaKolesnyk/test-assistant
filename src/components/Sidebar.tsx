@@ -20,7 +20,7 @@ const NAV_OTHER = [
 ]
 
 export default function Sidebar() {
-  const conversations = useAppSelector((s) => s.chat.conversations)
+  const conversations = useAppSelector((state) => state.chat.conversations)
   const chatBadge = conversations.length > 0 ? conversations.length : null
 
   function NavItem({

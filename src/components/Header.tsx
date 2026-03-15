@@ -4,7 +4,7 @@ import { setTheme } from '../features/settings/settingsSlice'
 
 export default function Header() {
   const dispatch = useAppDispatch()
-  const theme = useAppSelector((s) => s.settings.theme)
+  const theme = useAppSelector((state) => state.settings.theme)
   const isDark = theme === 'dark'
 
   return (
@@ -31,12 +31,19 @@ export default function Header() {
         >
           {isDark ? '☀️' : '🌙'}
         </button>
-        <button className="hidden sm:flex w-9 h-9 rounded-lg hover:bg-[var(--bg-panel)] items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors">
+        <button
+          disabled
+          title="Coming soon"
+          className="hidden sm:flex w-9 h-9 rounded-lg items-center justify-center text-[var(--text-2)] opacity-40 cursor-not-allowed"
+        >
           ✏️
         </button>
-        <button className="relative w-9 h-9 rounded-lg hover:bg-[var(--bg-panel)] flex items-center justify-center text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors">
+        <button
+          disabled
+          title="Coming soon"
+          className="w-9 h-9 rounded-lg flex items-center justify-center text-[var(--text-2)] opacity-40 cursor-not-allowed"
+        >
           🔔
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-400 rounded-full border-2 border-[var(--bg-base)]" />
         </button>
         {/* Home link — hidden on mobile (bottom nav handles it) */}
         <NavLink

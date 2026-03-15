@@ -10,7 +10,7 @@ const MODELS: { id: ModelId; label: string }[] = [
 
 export default function SettingsPage() {
   const dispatch = useAppDispatch()
-  const settings = useAppSelector((s) => s.settings)
+  const settings = useAppSelector((state) => state.settings)
   const isLight = settings.theme === 'light'
 
   return (
@@ -63,9 +63,9 @@ export default function SettingsPage() {
             onChange={(e) => dispatch(setModel(e.target.value as ModelId))}
             className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-input)] px-4 py-2.5 text-sm text-[var(--text-1)] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           >
-            {MODELS.map((m) => (
-              <option key={m.id} value={m.id} className="bg-[var(--bg-input)]">
-                {m.label}
+            {MODELS.map((model) => (
+              <option key={model.id} value={model.id} className="bg-[var(--bg-input)]">
+                {model.label}
               </option>
             ))}
           </select>

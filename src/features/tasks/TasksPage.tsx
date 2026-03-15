@@ -54,11 +54,11 @@ export default function TasksPage() {
   }
 
   function toggleTask(id: string) {
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)))
+    setTasks((prev) => prev.map((task) => (task.id === id ? { ...task, done: !task.done } : task)))
   }
 
   function removeTask(id: string) {
-    setTasks((prev) => prev.filter((t) => t.id !== id))
+    setTasks((prev) => prev.filter((task) => task.id !== id))
   }
 
   function startEdit(task: Task) {
@@ -73,8 +73,8 @@ export default function TasksPage() {
     const title = editValue.trim()
     if (!title) return
     setTasks((prev) =>
-      prev.map((t) =>
-        t.id === id ? { ...t, title, dueDate: buildDueDate(editDate, editTime) } : t,
+      prev.map((task) =>
+        task.id === id ? { ...task, title, dueDate: buildDueDate(editDate, editTime) } : task,
       ),
     )
     setEditingId(null)
@@ -93,8 +93,8 @@ export default function TasksPage() {
     if (e.key === 'Escape') cancelEdit()
   }
 
-  const active = tasks.filter((t) => !t.done)
-  const done = tasks.filter((t) => t.done)
+  const active = tasks.filter((task) => !task.done)
+  const done = tasks.filter((task) => task.done)
 
   return (
     <div className="h-full overflow-y-auto bg-[var(--bg-base)]">

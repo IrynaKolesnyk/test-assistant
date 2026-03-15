@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Anthropic from '@anthropic-ai/sdk'
 import { useAppSelector } from '../../app/hooks'
 
@@ -62,8 +62,16 @@ async function getMealById(id: string): Promise<MealDetail | null> {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function RecipesPage() {
-  const { apiKey, model } = useAppSelector((s) => s.settings)
+  const { apiKey, model } = useAppSelector((state) => state.settings)
   const usingFreeApi = !apiKey
+
+  // Abort any in-flight Claude stream on new search or unmount
+  const streamAbortRef = useRef<AbortController | null>(null)
+  useEffect(() => {
+    return () => {
+      streamAbortRef.current?.abort()
+    }
+  }, [])
 
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(false)
@@ -85,6 +93,11 @@ export default function RecipesPage() {
   async function handleSearch() {
     const q = query.trim()
     if (!q) return
+
+    // Abort any previous in-flight stream
+    streamAbortRef.current?.abort()
+    const abortController = new AbortController()
+    streamAbortRef.current = abortController
 
     setLoading(true)
     setError(null)
@@ -117,18 +130,21 @@ Format your response exactly like this:
 Keep it concise and practical.`
 
         setAiRecipe('')
-        const stream = client.messages.stream({
-          model,
-          max_tokens: 1024,
-          messages: [{ role: 'user', content: prompt }],
-        })
+        const stream = client.messages.stream(
+          {
+            model,
+            max_tokens: 1024,
+            messages: [{ role: 'user', content: prompt }],
+          },
+          { signal: abortController.signal },
+        )
 
         for await (const event of stream) {
-          if (
-            event.type === 'content_block_delta' &&
-            event.delta.type === 'text_delta'
-          ) {
-            setAiRecipe((prev) => prev + (event.delta as { type: 'text_delta'; text: string }).text)
+          if (event.type === 'content_block_delta') {
+            const delta = event.delta
+            if (delta.type === 'text_delta') {
+              setAiRecipe((prev) => prev + delta.text)
+            }
           }
         }
       } else {
@@ -144,13 +160,16 @@ Keep it concise and practical.`
         setMeals(results)
       }
     } catch (err) {
+      if (abortController.signal.aborted) return
       if (err instanceof Anthropic.APIError) {
         setError(err.message)
       } else {
         setError(String(err))
       }
     } finally {
-      setLoading(false)
+      if (!abortController.signal.aborted) {
+        setLoading(false)
+      }
     }
   }
 

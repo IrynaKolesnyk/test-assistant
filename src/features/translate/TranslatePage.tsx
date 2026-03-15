@@ -25,7 +25,7 @@ const LANGUAGES = [
   { code: 'id', label: 'Indonesian' },
 ]
 
-const TARGET_LANGUAGES = LANGUAGES.filter((l) => l.code !== 'auto')
+const TARGET_LANGUAGES = LANGUAGES.filter((language) => language.code !== 'auto')
 
 const MAX_CHARS_CLAUDE = 5000
 const MAX_CHARS_FREE = 500
@@ -44,7 +44,7 @@ async function translateWithMyMemory(text: string, source: string, target: strin
 }
 
 export default function TranslatePage() {
-  const { apiKey, model } = useAppSelector((s) => s.settings)
+  const { apiKey, model } = useAppSelector((state) => state.settings)
 
   const [sourceLang, setSourceLang] = useState('auto')
   const [targetLang, setTargetLang] = useState('es')
@@ -58,9 +58,18 @@ export default function TranslatePage() {
   const maxChars = usingFreeApi ? MAX_CHARS_FREE : MAX_CHARS_CLAUDE
 
   const sourceLangLabel =
-    LANGUAGES.find((l) => l.code === sourceLang)?.label ?? 'Detect language'
+    LANGUAGES.find((language) => language.code === sourceLang)?.label ?? 'Detect language'
   const targetLangLabel =
-    TARGET_LANGUAGES.find((l) => l.code === targetLang)?.label ?? 'English'
+    TARGET_LANGUAGES.find((language) => language.code === targetLang)?.label ?? 'English'
+
+  // Ref to abort any in-flight Claude stream when a new one starts or on unmount
+  const streamAbortRef = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    return () => {
+      streamAbortRef.current?.abort()
+    }
+  }, [])
 
   function swapLanguages() {
     if (sourceLang === 'auto') return
@@ -75,6 +84,11 @@ export default function TranslatePage() {
   const translate = useCallback(async () => {
     if (!sourceText.trim()) return
 
+    // Abort any previous in-flight stream
+    streamAbortRef.current?.abort()
+    const abortController = new AbortController()
+    streamAbortRef.current = abortController
+
     setLoading(true)
     setError(null)
     setTranslatedText('')
@@ -86,18 +100,21 @@ export default function TranslatePage() {
         const sourceName = sourceLang === 'auto' ? 'the detected language' : sourceLangLabel
         const prompt = `Translate the following text from ${sourceName} to ${targetLangLabel}. Output only the translated text with no explanations, notes, or extra content.\n\n${sourceText}`
 
-        const stream = client.messages.stream({
-          model,
-          max_tokens: 4096,
-          messages: [{ role: 'user', content: prompt }],
-        })
+        const stream = client.messages.stream(
+          {
+            model,
+            max_tokens: 4096,
+            messages: [{ role: 'user', content: prompt }],
+          },
+          { signal: abortController.signal },
+        )
 
         for await (const event of stream) {
-          if (
-            event.type === 'content_block_delta' &&
-            event.delta.type === 'text_delta'
-          ) {
-            setTranslatedText((prev) => prev + (event.delta as { type: 'text_delta'; text: string }).text)
+          if (event.type === 'content_block_delta') {
+            const delta = event.delta
+            if (delta.type === 'text_delta') {
+              setTranslatedText((prev) => prev + delta.text)
+            }
           }
         }
       } else {
@@ -106,13 +123,16 @@ export default function TranslatePage() {
         setTranslatedText(result)
       }
     } catch (err) {
+      if (abortController.signal.aborted) return
       if (err instanceof Anthropic.APIError) {
         setError(err.message)
       } else {
         setError(String(err))
       }
     } finally {
-      setLoading(false)
+      if (!abortController.signal.aborted) {
+        setLoading(false)
+      }
     }
   }, [sourceText, sourceLang, targetLang, sourceLangLabel, targetLangLabel, apiKey, model])
 
@@ -125,7 +145,7 @@ export default function TranslatePage() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
-  }, [sourceText, sourceLang, targetLang]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sourceText, sourceLang, targetLang, translate])
 
   async function copyTranslation() {
     if (!translatedText) return
@@ -194,8 +214,8 @@ export default function TranslatePage() {
                 onChange={(e) => setSourceLang(e.target.value)}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               >
-                {LANGUAGES.map((l) => (
-                  <option key={l.code} value={l.code}>{l.label}</option>
+                {LANGUAGES.map((language) => (
+                  <option key={language.code} value={language.code}>{language.label}</option>
                 ))}
               </select>
             </div>
@@ -222,8 +242,8 @@ export default function TranslatePage() {
                 onChange={(e) => setTargetLang(e.target.value)}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               >
-                {TARGET_LANGUAGES.map((l) => (
-                  <option key={l.code} value={l.code}>{l.label}</option>
+                {TARGET_LANGUAGES.map((language) => (
+                  <option key={language.code} value={language.code}>{language.label}</option>
                 ))}
               </select>
             </div>

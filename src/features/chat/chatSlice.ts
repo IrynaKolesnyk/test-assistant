@@ -12,11 +12,30 @@ function loadConversations(): Conversation[] {
   }
 }
 
+// Debounced save — avoids hammering localStorage on every streaming chunk.
+// Critical mutations (addConversation, deleteConversation) call saveNow instead.
+let saveDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
 function saveConversations(conversations: Conversation[]) {
+  if (saveDebounceTimer) clearTimeout(saveDebounceTimer)
+  saveDebounceTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(conversations))
+    } catch (err) {
+      console.warn('[chatSlice] Failed to persist conversations:', err)
+    }
+  }, 300)
+}
+
+function saveConversationsNow(conversations: Conversation[]) {
+  if (saveDebounceTimer) {
+    clearTimeout(saveDebounceTimer)
+    saveDebounceTimer = null
+  }
   try {
     localStorage.setItem(LS_KEY, JSON.stringify(conversations))
-  } catch {
-    // ignore
+  } catch (err) {
+    console.warn('[chatSlice] Failed to persist conversations:', err)
   }
 }
 
@@ -33,45 +52,52 @@ const chatSlice = createSlice({
     addConversation(state, action: PayloadAction<Conversation>) {
       state.conversations.unshift(action.payload)
       state.activeConversationId = action.payload.id
-      saveConversations(state.conversations)
+      saveConversationsNow(state.conversations)
     },
     selectConversation(state, action: PayloadAction<string>) {
       state.activeConversationId = action.payload
     },
     deleteConversation(state, action: PayloadAction<string>) {
       state.conversations = state.conversations.filter(
-        (c) => c.id !== action.payload,
+        (conversation) => conversation.id !== action.payload,
       )
       if (state.activeConversationId === action.payload) {
         state.activeConversationId = state.conversations[0]?.id ?? null
       }
-      saveConversations(state.conversations)
+      saveConversationsNow(state.conversations)
     },
     addMessage(
       state,
       action: PayloadAction<{ conversationId: string; message: Message }>,
     ) {
-      const conv = state.conversations.find(
-        (c) => c.id === action.payload.conversationId,
+      const conversation = state.conversations.find(
+        (conv) => conv.id === action.payload.conversationId,
       )
-      if (conv) {
-        conv.messages.push(action.payload.message)
-        if (conv.messages.length === 1) {
-          conv.title = action.payload.message.content.slice(0, 60)
-        }
-        saveConversations(state.conversations)
+      if (!conversation) {
+        console.warn('[chatSlice] addMessage: conversation not found:', action.payload.conversationId)
+        return
       }
+      conversation.messages.push(action.payload.message)
+      if (conversation.messages.length === 1) {
+        const raw = action.payload.message.content.slice(0, 60)
+        conversation.title = raw.length < action.payload.message.content.length ? raw + '…' : raw
+      }
+      saveConversationsNow(state.conversations)
     },
     updateLastMessage(
       state,
       action: PayloadAction<{ conversationId: string; chunk: string }>,
     ) {
-      const conv = state.conversations.find(
-        (c) => c.id === action.payload.conversationId,
+      const conversation = state.conversations.find(
+        (conv) => conv.id === action.payload.conversationId,
       )
-      if (conv && conv.messages.length > 0) {
-        const last = conv.messages[conv.messages.length - 1]
-        last.content += action.payload.chunk
+      if (!conversation) {
+        console.warn('[chatSlice] updateLastMessage: conversation not found:', action.payload.conversationId)
+        return
+      }
+      if (conversation.messages.length > 0) {
+        const lastMessage = conversation.messages[conversation.messages.length - 1]
+        lastMessage.content += action.payload.chunk
         saveConversations(state.conversations)
       }
     },

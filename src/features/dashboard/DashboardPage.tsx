@@ -1,9 +1,7 @@
 import { useState, useMemo } from 'react'
 import { NavLink } from 'react-router-dom'
-import { useAppDispatch, useAppSelector } from '../../app/hooks'
-import { addConversation, addMessage } from '../chat/chatSlice'
-import { useSendMessageMutation } from '../chat/claudeApi'
-import type { Conversation, Message } from '../../types'
+import { useAppSelector } from '../../app/hooks'
+import { useSendChat } from '../chat/useSendChat'
 import { loadTasks, type Task } from '../tasks/tasksStorage'
 
 const QUICK_ACTIONS = [
@@ -34,7 +32,7 @@ function loadTodaysTasks(): Task[] {
   const now = new Date()
   const pad = (n: number) => String(n).padStart(2, '0')
   const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
-  return loadTasks().filter((t) => t.dueDate?.slice(0, 10) === today)
+  return loadTasks().filter((task) => task.dueDate?.slice(0, 10) === today)
 }
 
 const CAL_HEADERS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
@@ -48,7 +46,7 @@ function buildCalendarWeeks(year: number, month: number): (number | null)[][] {
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const days: (number | null)[] = []
   for (let i = 0; i < firstDay; i++) days.push(null)
-  for (let d = 1; d <= daysInMonth; d++) days.push(d)
+  for (let day = 1; day <= daysInMonth; day++) days.push(day)
   while (days.length % 7 !== 0) days.push(null)
   const weeks: (number | null)[][] = []
   for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7))
@@ -56,10 +54,9 @@ function buildCalendarWeeks(year: number, month: number): (number | null)[][] {
 }
 
 export default function DashboardPage() {
-  const dispatch = useAppDispatch()
-  const { conversations, activeConversationId } = useAppSelector((s) => s.chat)
-  const settings = useAppSelector((s) => s.settings)
-  const [sendMessage] = useSendMessageMutation()
+  const { conversations, activeConversationId } = useAppSelector((state) => state.chat)
+  const { apiKey } = useAppSelector((state) => state.settings)
+  const { sendChat } = useSendChat()
   const [chatInput, setChatInput] = useState('')
 
   const [todaysTasks] = useState<Task[]>(loadTodaysTasks)
@@ -84,44 +81,14 @@ export default function DashboardPage() {
   }
 
   const activeConversation =
-    conversations.find((c) => c.id === activeConversationId) ?? conversations[0] ?? null
+    conversations.find((conversation) => conversation.id === activeConversationId) ?? conversations[0] ?? null
   const displayMessages = activeConversation?.messages.slice(-3) ?? []
 
   async function handleChatSend() {
     const text = chatInput.trim()
     if (!text) return
     setChatInput('')
-
-    let convId = activeConversationId
-    if (!convId) {
-      const newConv: Conversation = {
-        id: crypto.randomUUID(),
-        title: text.slice(0, 60),
-        messages: [],
-        createdAt: Date.now(),
-      }
-      dispatch(addConversation(newConv))
-      convId = newConv.id
-    }
-
-    const userMsg: Message = {
-      id: crypto.randomUUID(),
-      role: 'user',
-      content: text,
-      createdAt: Date.now(),
-    }
-    dispatch(addMessage({ conversationId: convId, message: userMsg }))
-
-    const conv = conversations.find((c) => c.id === convId)
-    const history = conv ? conv.messages.map((m) => ({ role: m.role, content: m.content })) : []
-    history.push({ role: 'user', content: text })
-
-    await sendMessage({
-      conversationId: convId,
-      messages: history,
-      model: settings.model,
-      systemPrompt: settings.systemPrompt,
-    })
+    await sendChat(text)
   }
 
   return (
@@ -144,23 +111,23 @@ export default function DashboardPage() {
               <button className="text-[var(--text-3)] hover:text-[var(--text-1)] text-lg leading-none">⋯</button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {QUICK_ACTIONS.map((a) => {
+              {QUICK_ACTIONS.map((action) => {
                 const inner = (
                   <>
-                    <span className={`w-10 h-10 rounded-xl ${a.bg} flex items-center justify-center text-xl mb-2`}>
-                      {a.icon}
+                    <span className={`w-10 h-10 rounded-xl ${action.bg} flex items-center justify-center text-xl mb-2`}>
+                      {action.icon}
                     </span>
-                    <span className="text-xs font-medium text-[var(--text-1)]">{a.title}</span>
-                    <span className="text-xs text-[var(--text-3)] mt-0.5">{a.subtitle}</span>
+                    <span className="text-xs font-medium text-[var(--text-1)]">{action.title}</span>
+                    <span className="text-xs text-[var(--text-3)] mt-0.5">{action.subtitle}</span>
                   </>
                 )
                 const cls = "flex flex-col items-center p-3 rounded-xl bg-[var(--bg-base)] hover:bg-[var(--bg-hover)] border border-[var(--border)] hover:border-indigo-500/50 transition-all text-center"
-                return a.title === 'Translate' ? (
-                  <NavLink key={a.title} to="/translate" end className={cls}>
+                return action.title === 'Translate' ? (
+                  <NavLink key={action.title} to="/translate" end className={cls}>
                     {inner}
                   </NavLink>
                 ) : (
-                  <button key={a.title} className={cls}>
+                  <button key={action.title} className={cls}>
                     {inner}
                   </button>
                 )
@@ -172,18 +139,18 @@ export default function DashboardPage() {
           <div className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-4 md:p-5">
             <h2 className="text-sm font-semibold text-[var(--text-1)] mb-3">📊 Statistics</h2>
             <div>
-              {STATS.map((s, i) => (
-                <div key={s.label}>
+              {STATS.map((stat, index) => (
+                <div key={stat.label}>
                   <div className="flex items-center justify-between py-3">
                     <div>
-                      <p className="text-xs text-[var(--text-3)]">{s.label}</p>
-                      <p className="text-2xl font-bold text-[var(--text-1)] mt-0.5">{s.value}</p>
+                      <p className="text-xs text-[var(--text-3)]">{stat.label}</p>
+                      <p className="text-2xl font-bold text-[var(--text-1)] mt-0.5">{stat.value}</p>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${s.badgeClass}`}>
-                      {s.badge}
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${stat.badgeClass}`}>
+                      {stat.badge}
                     </span>
                   </div>
-                  {i < STATS.length - 1 && <div className="border-t border-[var(--border)]" />}
+                  {index < STATS.length - 1 && <div className="border-t border-[var(--border)]" />}
                 </div>
               ))}
             </div>
@@ -212,26 +179,26 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ) : (
-                displayMessages.map((msg) => (
+                displayMessages.map((message) => (
                   <div
-                    key={msg.id}
-                    className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                    key={message.id}
+                    className={`flex items-start gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
                   >
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${
-                        msg.role === 'user' ? 'bg-[var(--border)]' : 'bg-indigo-600'
+                        message.role === 'user' ? 'bg-[var(--border)]' : 'bg-indigo-600'
                       }`}
                     >
-                      {msg.role === 'user' ? 'U' : 'AI'}
+                      {message.role === 'user' ? 'U' : 'AI'}
                     </div>
                     <div
                       className={`rounded-2xl px-4 py-2.5 text-sm max-w-[75%] ${
-                        msg.role === 'user'
+                        message.role === 'user'
                           ? 'bg-indigo-600 text-white rounded-tr-sm'
                           : 'bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-1)] rounded-tl-sm'
                       }`}
                     >
-                      <p className="line-clamp-2">{msg.content}</p>
+                      <p className="line-clamp-2">{message.content}</p>
                     </div>
                   </div>
                 ))
@@ -245,12 +212,12 @@ export default function DashboardPage() {
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleChatSend()}
                 placeholder="Type your message..."
-                disabled={!settings.apiKey}
+                disabled={!apiKey}
                 className="flex-1 bg-[var(--bg-input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-1)] placeholder-[var(--text-3)] focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
               />
               <button
                 onClick={handleChatSend}
-                disabled={!chatInput.trim() || !settings.apiKey}
+                disabled={!chatInput.trim() || !apiKey}
                 className="w-10 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white flex items-center justify-center transition-colors flex-shrink-0"
               >
                 ➤
@@ -262,8 +229,8 @@ export default function DashboardPage() {
           <div className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-4 md:p-5">
             <h2 className="text-sm font-semibold text-[var(--text-1)] mb-4">⏰ Recent Activity</h2>
             <div className="space-y-3">
-              {RECENT_ACTIVITY.map((item, i) => (
-                <div key={i} className="flex items-start gap-3">
+              {RECENT_ACTIVITY.map((item, index) => (
+                <div key={index} className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full bg-[var(--bg-base)] border border-[var(--border)] flex items-center justify-center text-sm flex-shrink-0">
                     {item.icon}
                   </div>
@@ -291,14 +258,14 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="grid grid-cols-7 gap-1 text-center">
-              {CAL_HEADERS.map((d) => (
-                <div key={d} className="text-xs text-[var(--text-3)] py-1 font-medium">
-                  {d}
+              {CAL_HEADERS.map((day) => (
+                <div key={day} className="text-xs text-[var(--text-3)] py-1 font-medium">
+                  {day}
                 </div>
               ))}
-              {calWeeks.flat().map((day, i) => (
+              {calWeeks.flat().map((day, index) => (
                 <div
-                  key={i}
+                  key={index}
                   className={`text-xs py-1.5 rounded-lg transition-colors ${
                     !day
                       ? ''
