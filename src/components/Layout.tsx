@@ -1,14 +1,17 @@
 import { Outlet } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Sidebar from './Sidebar'
 import Header from './Header'
 import BottomNav from './BottomNav'
 
 export default function Layout() {
+  const { t } = useTranslation()
+
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--bg-base)]">
       {/* Skip link — keyboard users press Tab to reveal, then Enter to jump to content */}
       <a href="#main-content" className="skip-link">
-        Skip to main content
+        {t('nav.skipToContent')}
       </a>
 
       {/* Sidebar — hidden on mobile, visible from md up */}

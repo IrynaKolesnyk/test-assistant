@@ -6,6 +6,7 @@ const defaultState: SettingsState = {
   model: 'claude-sonnet-4-6',
   systemPrompt: 'You are a helpful AI assistant.',
   theme: 'dark',
+  language: 'en',
 }
 
 describe('settingsSlice', () => {

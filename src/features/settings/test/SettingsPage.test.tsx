@@ -15,6 +15,7 @@ function makeStore(overrides: Partial<SettingsState> = {}) {
         model: 'claude-sonnet-4-6' as const,
         systemPrompt: 'You are a helpful AI assistant.',
         theme: 'dark' as const,
+        language: 'en' as const,
         ...overrides,
       },
     },
@@ -51,7 +52,7 @@ describe('SettingsPage', () => {
 
   it('renders the model selector', () => {
     renderSettings()
-    expect(screen.getByRole('combobox')).toBeInTheDocument()
+    expect(screen.getAllByRole('combobox').length).toBeGreaterThanOrEqual(1)
   })
 
   it('shows all model options', () => {

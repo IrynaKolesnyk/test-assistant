@@ -10,6 +10,7 @@
     "erasableSyntaxOnly": false,
     "noUncheckedSideEffectImports": false,
     "allowImportingTsExtensions": false,
+    "resolveJsonModule": true,
     "noEmit": true
   },
   "include": ["src", "jest.setup.ts"],

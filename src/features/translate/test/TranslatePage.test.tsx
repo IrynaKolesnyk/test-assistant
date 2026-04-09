@@ -41,6 +41,7 @@ function makeStore(apiKey = '') {
         model: 'claude-sonnet-4-6' as const,
         systemPrompt: '',
         theme: 'dark' as const,
+        language: 'en' as const,
       },
     },
   })
@@ -233,10 +234,10 @@ describe('TranslatePage — char count & clear', () => {
     renderPage()
     const textarea = screen.getByPlaceholderText('Enter text')
     await userEvent.type(textarea, 'Hello')
-    const clearBtn = screen.getByTitle('Clear')
+    const clearBtn = screen.getByTitle('Clear source text')
     await userEvent.click(clearBtn)
     expect(textarea).toHaveValue('')
-    expect(screen.queryByTitle('Clear')).toBeNull()
+    expect(screen.queryByTitle('Clear source text')).toBeNull()
   })
 
   it('Translate button becomes enabled after typing text', async () => {

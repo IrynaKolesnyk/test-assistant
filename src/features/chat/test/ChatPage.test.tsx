@@ -25,6 +25,7 @@ function makeStore(apiKey = '') {
         model: 'claude-sonnet-4-6' as const,
         systemPrompt: '',
         theme: 'dark' as const,
+        language: 'en' as const,
       },
     },
   })

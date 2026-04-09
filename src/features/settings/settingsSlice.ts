@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import type { ModelId, SettingsState, Theme } from '../../types'
+import type { Language, ModelId, SettingsState, Theme } from '../../types'
+import i18n from '../../i18n'
 
 const LS_KEY = 'ai-assistant:settings'
 
@@ -30,6 +31,7 @@ const defaults: SettingsState = {
   model: 'claude-sonnet-4-6',
   systemPrompt: 'You are a helpful AI assistant.',
   theme: 'dark',
+  language: 'en',
 }
 
 const initialState: SettingsState = { ...defaults, ...loadFromStorage() }
@@ -54,6 +56,11 @@ const settingsSlice = createSlice({
       state.theme = action.payload
       saveToStorage(state)
     },
+    setLanguage(state, action: PayloadAction<Language>) {
+      state.language = action.payload
+      i18n.changeLanguage(action.payload)
+      saveToStorage(state)
+    },
   },
 })
 
@@ -65,5 +72,5 @@ function saveToStorage(state: SettingsState) {
   }
 }
 
-export const { setApiKey, setModel, setSystemPrompt, setTheme } = settingsSlice.actions
+export const { setApiKey, setModel, setSystemPrompt, setTheme, setLanguage } = settingsSlice.actions
 export default settingsSlice.reducer

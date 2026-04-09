@@ -1,20 +1,22 @@
 import { NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAppSelector } from '../app/hooks'
 
-const TABS = [
-  { path: '/dashboard', label: 'Home', icon: '🏠' },
-  { path: '/chat', label: 'Chat', icon: '💬', showBadge: true },
-  { path: '/tasks', label: 'Tasks', icon: '✅' },
-  { path: '/calendar', label: 'Calendar', icon: '📅' },
-  { path: '/settings', label: 'More', icon: '⚙️' },
-]
-
 export default function BottomNav() {
+  const { t } = useTranslation()
   const conversations = useAppSelector((state) => state.chat.conversations)
   const chatBadge = conversations.length > 0 ? conversations.length : null
 
+  const TABS = [
+    { path: '/dashboard', label: t('nav.home'), icon: '🏠' },
+    { path: '/chat', label: t('nav.chat'), icon: '💬', showBadge: true },
+    { path: '/tasks', label: t('nav.tasks'), icon: '✅' },
+    { path: '/calendar', label: t('nav.calendar'), icon: '📅' },
+    { path: '/settings', label: t('nav.more'), icon: '⚙️' },
+  ]
+
   return (
-    <nav className="md:hidden flex-shrink-0 bg-[var(--bg-panel)] border-t border-[var(--border)] flex items-stretch h-16 safe-area-bottom" aria-label="Mobile navigation">
+    <nav className="md:hidden flex-shrink-0 bg-[var(--bg-panel)] border-t border-[var(--border)] flex items-stretch h-16 safe-area-bottom" aria-label={t('nav.mobileNavigation')}>
       {TABS.map(({ path, label, icon, showBadge }) => (
         <NavLink
           key={path}
@@ -37,7 +39,7 @@ export default function BottomNav() {
             )}
           </span>
           {showBadge && chatBadge && (
-            <span className="sr-only">({chatBadge} conversations)</span>
+            <span className="sr-only">({t('nav.conversations', { count: chatBadge })})</span>
           )}
           <span className="text-[10px] font-medium leading-none">{label}</span>
         </NavLink>

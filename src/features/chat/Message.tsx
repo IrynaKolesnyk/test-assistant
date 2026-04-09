@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { Message as MessageType } from '../../types'
 
 interface Props {
@@ -5,10 +6,11 @@ interface Props {
 }
 
 export default function Message({ message }: Props) {
+  const { t } = useTranslation()
   const isUser = message.role === 'user'
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`} aria-label={isUser ? 'User message' : 'AI message'}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`} aria-label={isUser ? t('chat.userMessage') : t('chat.aiMessage')}>
       {!isUser && (
         <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold mr-3 flex-shrink-0 mt-1" aria-hidden="true">
           AI

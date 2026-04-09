@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Message as MessageType } from '../../types'
 import Message from './Message'
 
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function MessageList({ messages, streaming }: Props) {
+  const { t } = useTranslation()
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -18,24 +20,24 @@ export default function MessageList({ messages, streaming }: Props) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-[var(--text-3)] select-none">
         <div className="text-6xl mb-4">💬</div>
-        <p className="text-lg font-medium text-[var(--text-2)]">Start a conversation</p>
-        <p className="text-sm mt-1">Type a message below to chat with Claude</p>
+        <p className="text-lg font-medium text-[var(--text-2)]">{t('chat.startConversation')}</p>
+        <p className="text-sm mt-1">{t('chat.typeToChat')}</p>
       </div>
     )
   }
 
   return (
-    <div role="log" aria-live="polite" aria-label="Chat messages" className="flex-1 overflow-y-auto px-6 py-4">
+    <div role="log" aria-live="polite" aria-label={t('chat.chatMessages')} className="flex-1 overflow-y-auto px-6 py-4">
       {messages.map((message) => (
         <Message key={message.id} message={message} />
       ))}
       {streaming && (
-        <div className="flex justify-start mb-4" role="status" aria-label="AI is typing">
+        <div className="flex justify-start mb-4" role="status" aria-label={t('chat.aiIsTyping')}>
           <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold mr-3 flex-shrink-0 mt-1" aria-hidden="true">
             AI
           </div>
           <div className="bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl rounded-tl-sm px-4 py-3">
-            <span className="sr-only">AI is typing</span>
+            <span className="sr-only">{t('chat.aiIsTyping')}</span>
             <span className="inline-flex gap-1" aria-hidden="true">
               <span className="w-2 h-2 rounded-full bg-[var(--text-3)] animate-bounce [animation-delay:0ms]" />
               <span className="w-2 h-2 rounded-full bg-[var(--text-3)] animate-bounce [animation-delay:150ms]" />

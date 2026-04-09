@@ -1,31 +1,19 @@
 import { useState, useMemo } from 'react'
 import { NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAppSelector } from '../../app/hooks'
 import { useSendChat } from '../chat/useSendChat'
 import { loadTasks, type Task } from '../tasks/tasksStorage'
 
-const QUICK_ACTIONS = [
-  { icon: '📅', title: 'Plan Day', subtitle: 'Create a schedule', bg: 'bg-red-500/20' },
-  { icon: '🌐', title: 'Translate', subtitle: 'Convert text', bg: 'bg-blue-500/20' },
-  { icon: '🔍', title: 'Find Recipe', subtitle: 'By ingredients', bg: 'bg-orange-500/20' },
-  { icon: '⏰', title: 'Set Reminder', subtitle: 'Never forget', bg: 'bg-yellow-500/20' },
-  { icon: '📋', title: 'Create List', subtitle: 'Organize tasks', bg: 'bg-purple-500/20' },
-  { icon: '📊', title: 'Analytics', subtitle: 'View insights', bg: 'bg-green-500/20' },
+const MONTH_KEYS = [
+  'months.january', 'months.february', 'months.march', 'months.april',
+  'months.may', 'months.june', 'months.july', 'months.august',
+  'months.september', 'months.october', 'months.november', 'months.december',
 ]
 
-const STATS = [
-  { label: 'Tasks Completed', value: '24', badge: '+48%', badgeClass: 'bg-green-500/20 text-green-400' },
-  { label: 'Active Conversations', value: '8', badge: '+3', badgeClass: 'bg-blue-500/20 text-blue-400' },
-  { label: 'Translations', value: '156', badge: '+24%', badgeClass: 'bg-green-500/20 text-green-400' },
-  { label: 'Recipes Found', value: '42', badge: '🍳', badgeClass: 'bg-orange-500/20 text-orange-400' },
-]
-
-const RECENT_ACTIVITY = [
-  { icon: '✅', title: 'Task Completed', desc: "Finished 'Review project proposal'", time: '5 minutes ago' },
-  { icon: '🌐', title: 'Translation', desc: 'Translated document to English', time: '15 minutes ago' },
-  { icon: '📅', title: 'Schedule Created', desc: 'Daily plan for tomorrow', time: '1 hour ago' },
-  { icon: '🍳', title: 'Recipe Found', desc: 'Stir-fry with rice and broccoli', time: '2 hours ago' },
-  { icon: '💬', title: 'New Conversation', desc: 'Started new AI chat activity', time: '3 hours ago' },
+const WEEKDAY_KEYS = [
+  'weekdays.su', 'weekdays.mo', 'weekdays.tu', 'weekdays.we',
+  'weekdays.th', 'weekdays.fr', 'weekdays.sa',
 ]
 
 function loadTodaysTasks(): Task[] {
@@ -34,12 +22,6 @@ function loadTodaysTasks(): Task[] {
   const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
   return loadTasks().filter((task) => task.dueDate?.slice(0, 10) === today)
 }
-
-const CAL_HEADERS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-]
 
 function buildCalendarWeeks(year: number, month: number): (number | null)[][] {
   const firstDay = new Date(year, month, 1).getDay()
@@ -54,6 +36,7 @@ function buildCalendarWeeks(year: number, month: number): (number | null)[][] {
 }
 
 export default function DashboardPage() {
+  const { t } = useTranslation()
   const { conversations, activeConversationId } = useAppSelector((state) => state.chat)
   const { apiKey } = useAppSelector((state) => state.settings)
   const { sendChat } = useSendChat()
@@ -63,7 +46,7 @@ export default function DashboardPage() {
   const today = useMemo(() => new Date(), [])
   const [calDate, setCalDate] = useState({ year: today.getFullYear(), month: today.getMonth() })
   const calWeeks = useMemo(() => buildCalendarWeeks(calDate.year, calDate.month), [calDate])
-  const calLabel = `${MONTH_NAMES[calDate.month]} ${calDate.year}`
+  const calLabel = `${t(MONTH_KEYS[calDate.month])} ${calDate.year}`
   const todayDay =
     calDate.year === today.getFullYear() && calDate.month === today.getMonth()
       ? today.getDate()
@@ -79,6 +62,30 @@ export default function DashboardPage() {
       month === 11 ? { year: year + 1, month: 0 } : { year, month: month + 1 },
     )
   }
+
+  const QUICK_ACTIONS = [
+    { icon: '📅', title: t('dashboard.planDay'), subtitle: t('dashboard.planDaySub'), bg: 'bg-red-500/20' },
+    { icon: '🌐', title: t('dashboard.translateAction'), subtitle: t('dashboard.translateSub'), bg: 'bg-blue-500/20' },
+    { icon: '🔍', title: t('dashboard.findRecipe'), subtitle: t('dashboard.findRecipeSub'), bg: 'bg-orange-500/20' },
+    { icon: '⏰', title: t('dashboard.setReminder'), subtitle: t('dashboard.setReminderSub'), bg: 'bg-yellow-500/20' },
+    { icon: '📋', title: t('dashboard.createList'), subtitle: t('dashboard.createListSub'), bg: 'bg-purple-500/20' },
+    { icon: '📊', title: t('dashboard.analytics'), subtitle: t('dashboard.analyticsSub'), bg: 'bg-green-500/20' },
+  ]
+
+  const STATS = [
+    { label: t('dashboard.tasksCompleted'), value: '24', badge: '+48%', badgeClass: 'bg-green-500/20 text-green-400' },
+    { label: t('dashboard.activeConversations'), value: '8', badge: '+3', badgeClass: 'bg-blue-500/20 text-blue-400' },
+    { label: t('dashboard.translations'), value: '156', badge: '+24%', badgeClass: 'bg-green-500/20 text-green-400' },
+    { label: t('dashboard.recipesFound'), value: '42', badge: '🍳', badgeClass: 'bg-orange-500/20 text-orange-400' },
+  ]
+
+  const RECENT_ACTIVITY = [
+    { icon: '✅', title: t('dashboard.taskCompleted'), desc: t('dashboard.taskCompletedDesc'), time: t('dashboard.minutesAgo', { count: 5 }) },
+    { icon: '🌐', title: t('dashboard.translation'), desc: t('dashboard.translationDesc'), time: t('dashboard.minutesAgo', { count: 15 }) },
+    { icon: '📅', title: t('dashboard.scheduleCreated'), desc: t('dashboard.scheduleCreatedDesc'), time: t('dashboard.hourAgo') },
+    { icon: '🍳', title: t('dashboard.recipeFound'), desc: t('dashboard.recipeFoundDesc'), time: t('dashboard.hoursAgo', { count: 2 }) },
+    { icon: '💬', title: t('dashboard.newConversation'), desc: t('dashboard.newConversationDesc'), time: t('dashboard.hoursAgo', { count: 3 }) },
+  ]
 
   const activeConversation =
     conversations.find((conversation) => conversation.id === activeConversationId) ?? conversations[0] ?? null
@@ -96,9 +103,9 @@ export default function DashboardPage() {
       <div className="p-4 md:p-6 max-w-[1400px]">
         {/* Welcome */}
         <div className="mb-5 md:mb-6">
-          <h1 className="text-xl md:text-2xl font-bold text-[var(--text-1)]">Welcome back, Iryna! 👋</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-[var(--text-1)]">{t('dashboard.welcome')}</h1>
           <p className="text-[var(--text-2)] text-sm mt-1">
-            Here's what's happening with your AI assistant today
+            {t('dashboard.subtitle')}
           </p>
         </div>
 
@@ -107,7 +114,7 @@ export default function DashboardPage() {
           {/* Quick Actions */}
           <div className="lg:col-span-2 bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-4 md:p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-[var(--text-1)]">⚡ Quick Actions</h2>
+              <h2 className="text-sm font-semibold text-[var(--text-1)]">⚡ {t('dashboard.quickActions')}</h2>
               <button className="text-[var(--text-3)] hover:text-[var(--text-1)] text-lg leading-none">⋯</button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -122,7 +129,7 @@ export default function DashboardPage() {
                   </>
                 )
                 const cls = "flex flex-col items-center p-3 rounded-xl bg-[var(--bg-base)] hover:bg-[var(--bg-hover)] border border-[var(--border)] hover:border-indigo-500/50 transition-all text-center"
-                return action.title === 'Translate' ? (
+                return action.title === t('dashboard.translateAction') ? (
                   <NavLink key={action.title} to="/translate" end className={cls}>
                     {inner}
                   </NavLink>
@@ -137,7 +144,7 @@ export default function DashboardPage() {
 
           {/* Statistics */}
           <div className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-4 md:p-5">
-            <h2 className="text-sm font-semibold text-[var(--text-1)] mb-3">📊 Statistics</h2>
+            <h2 className="text-sm font-semibold text-[var(--text-1)] mb-3">📊 {t('dashboard.statistics')}</h2>
             <div>
               {STATS.map((stat, index) => (
                 <div key={stat.label}>
@@ -162,9 +169,9 @@ export default function DashboardPage() {
           {/* AI Chat */}
           <div className="lg:col-span-2 bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-4 md:p-5 flex flex-col">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-[var(--text-1)]">💬 AI Chat</h2>
+              <h2 className="text-sm font-semibold text-[var(--text-1)]">💬 {t('dashboard.aiChat')}</h2>
               <NavLink to="/chat" end className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
-                View all →
+                {t('common.viewAll')}
               </NavLink>
             </div>
 
@@ -175,7 +182,7 @@ export default function DashboardPage() {
                     AI
                   </div>
                   <div className="bg-[var(--bg-input)] border border-[var(--border)] rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm text-[var(--text-1)] max-w-[80%]">
-                    Hello! I'm your AI assistant. How can I help you today?
+                    {t('dashboard.aiGreeting')}
                   </div>
                 </div>
               ) : (
@@ -211,15 +218,15 @@ export default function DashboardPage() {
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleChatSend()}
-                aria-label="Message"
-                placeholder="Type your message..."
+                aria-label={t('chat.messageLabel')}
+                placeholder={t('dashboard.typeMessage')}
                 disabled={!apiKey}
                 className="flex-1 bg-[var(--bg-input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-1)] placeholder-[var(--text-3)] focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
               />
               <button
                 onClick={handleChatSend}
                 disabled={!chatInput.trim() || !apiKey}
-                aria-label="Send message"
+                aria-label={t('dashboard.sendMessage')}
                 className="w-10 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white flex items-center justify-center transition-colors flex-shrink-0"
               >
                 ➤
@@ -229,7 +236,7 @@ export default function DashboardPage() {
 
           {/* Recent Activity */}
           <div className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-4 md:p-5">
-            <h2 className="text-sm font-semibold text-[var(--text-1)] mb-4">⏰ Recent Activity</h2>
+            <h2 className="text-sm font-semibold text-[var(--text-1)] mb-4">⏰ {t('dashboard.recentActivity')}</h2>
             <div className="space-y-3">
               {RECENT_ACTIVITY.map((item, index) => (
                 <div key={index} className="flex items-start gap-3">
@@ -252,23 +259,23 @@ export default function DashboardPage() {
           {/* Calendar */}
           <div className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-[var(--text-1)]">📅 Calendar</h2>
+              <h2 className="text-sm font-semibold text-[var(--text-1)]">📅 {t('dashboard.calendar')}</h2>
               <div className="flex items-center gap-2">
-                <button onClick={prevMonth} aria-label="Previous month" className="text-[var(--text-3)] hover:text-[var(--text-1)] transition-colors">‹</button>
+                <button onClick={prevMonth} aria-label={t('dashboard.previousMonth')} className="text-[var(--text-3)] hover:text-[var(--text-1)] transition-colors">‹</button>
                 <span className="text-xs text-[var(--text-2)]">{calLabel}</span>
-                <button onClick={nextMonth} aria-label="Next month" className="text-[var(--text-3)] hover:text-[var(--text-1)] transition-colors">›</button>
+                <button onClick={nextMonth} aria-label={t('dashboard.nextMonth')} className="text-[var(--text-3)] hover:text-[var(--text-1)] transition-colors">›</button>
               </div>
             </div>
             <div role="grid" aria-label={calLabel} className="grid grid-cols-7 gap-1 text-center">
-              {CAL_HEADERS.map((day) => (
-                <div key={day} className="text-xs text-[var(--text-3)] py-1 font-medium">
-                  {day}
+              {WEEKDAY_KEYS.map((key) => (
+                <div key={key} className="text-xs text-[var(--text-3)] py-1 font-medium">
+                  {t(key)}
                 </div>
               ))}
               {calWeeks.flat().map((day, index) => (
                 <div
                   key={index}
-                  aria-label={day ? `${MONTH_NAMES[calDate.month]} ${day}` : undefined}
+                  aria-label={day ? `${t(MONTH_KEYS[calDate.month])} ${day}` : undefined}
                   {...(day === todayDay ? { 'aria-current': 'date' as const } : {})}
                   className={`text-xs py-1.5 rounded-lg transition-colors ${
                     !day
@@ -287,16 +294,16 @@ export default function DashboardPage() {
           {/* Today's Tasks */}
           <div className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-[var(--text-1)]">✓ Today's Tasks</h2>
+              <h2 className="text-sm font-semibold text-[var(--text-1)]">✓ {t('dashboard.todaysTasks')}</h2>
               <NavLink to="/tasks" end className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
-                View all →
+                {t('common.viewAll')}
               </NavLink>
             </div>
             {todaysTasks.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-6 text-center">
-                <p className="text-sm text-[var(--text-3)]">No tasks scheduled for today</p>
+                <p className="text-sm text-[var(--text-3)]">{t('dashboard.noTasksToday')}</p>
                 <NavLink to="/tasks" end className="text-xs text-indigo-400 hover:text-indigo-300 mt-2 transition-colors">
-                  Add tasks →
+                  {t('common.addTasks')}
                 </NavLink>
               </div>
             ) : (
@@ -328,7 +335,7 @@ export default function DashboardPage() {
                                 hour: '2-digit',
                                 minute: '2-digit',
                               })
-                            : 'All day'}
+                            : t('common.allDay')}
                         </p>
                       )}
                     </div>

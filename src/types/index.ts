@@ -21,11 +21,14 @@ export interface Conversation {
 
 export type Theme = 'dark' | 'light'
 
+export type Language = 'en' | 'uk' | 'es'
+
 export interface SettingsState {
   apiKey: string
   model: ModelId
   systemPrompt: string
   theme: Theme
+  language: Language
 }
 
 export interface ChatState {

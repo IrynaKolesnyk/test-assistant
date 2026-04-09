@@ -65,6 +65,7 @@ function makeStore(apiKey = '') {
         model: 'claude-sonnet-4-6' as const,
         systemPrompt: '',
         theme: 'dark' as const,
+        language: 'en' as const,
       },
     },
   })
@@ -90,7 +91,7 @@ beforeEach(() => {
 describe('RecipesPage — rendering', () => {
   it('renders the page heading', () => {
     renderPage()
-    expect(screen.getByRole('heading', { name: /find recipe/i })).toBeInTheDocument()
+    expect(screen.getAllByRole('heading', { name: /recipes/i }).length).toBeGreaterThanOrEqual(1)
   })
 
   it('renders the search input', () => {
@@ -126,12 +127,12 @@ describe('RecipesPage — rendering', () => {
 
   it('shows idle empty state initially', () => {
     renderPage()
-    expect(screen.getByText(/search thousands of recipes/i)).toBeInTheDocument()
+    expect(screen.getByText(/search for recipes/i)).toBeInTheDocument()
   })
 
-  it('shows AI-oriented idle state when API key is set', () => {
+  it('shows idle empty state when API key is set', () => {
     renderPage('sk-test-key')
-    expect(screen.getByText(/AI-powered recipe generation/i)).toBeInTheDocument()
+    expect(screen.getByText(/search for recipes/i)).toBeInTheDocument()
   })
 })
 

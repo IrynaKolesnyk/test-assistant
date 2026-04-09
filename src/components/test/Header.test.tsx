@@ -16,6 +16,7 @@ function makeStore(theme: SettingsState['theme'] = 'dark') {
         model: 'claude-sonnet-4-6' as const,
         systemPrompt: '',
         theme,
+        language: 'en' as const,
       },
     },
   })

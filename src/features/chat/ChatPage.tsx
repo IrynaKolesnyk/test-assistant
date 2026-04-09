@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next'
 import { useAppSelector } from '../../app/hooks'
 import { useSendChat } from './useSendChat'
 import ChatInput from './ChatInput'
 import MessageList from './MessageList'
 
 export default function ChatPage() {
+  const { t } = useTranslation()
   const { conversations, activeConversationId } = useAppSelector((state) => state.chat)
   const settings = useAppSelector((state) => state.settings)
   const { sendChat, streaming, error } = useSendChat()
@@ -24,7 +26,7 @@ export default function ChatPage() {
         ? String(error.error)
         : 'data' in error
         ? String(error.data)
-        : 'An error occurred. Please try again.'
+        : t('chat.errorOccurred')
     return (
       <div role="alert" className="flex-shrink-0 bg-red-500/10 border-b border-red-500/20 px-6 py-3 text-sm text-red-500">
         {message}
@@ -36,18 +38,18 @@ export default function ChatPage() {
     <div className="flex flex-col h-full bg-[var(--bg-base)]">
       <header className="flex-shrink-0 border-b border-[var(--border)] bg-[var(--bg-panel)] px-6 py-3 flex items-center justify-between">
         <h2 className="font-semibold text-[var(--text-1)] truncate">
-          {activeConversation?.title ?? 'New conversation'}
+          {activeConversation?.title ?? t('chat.newConversation')}
         </h2>
         <span className="text-xs text-[var(--text-3)]">{settings.model}</span>
       </header>
 
       {apiKeyMissing && (
         <div role="alert" className="flex-shrink-0 bg-amber-500/10 border-b border-amber-500/20 px-6 py-3 text-sm text-amber-500">
-          ⚠ No API key set.{' '}
+          ⚠ {t('chat.noApiKey')}{' '}
           <a href="/settings" className="underline font-medium hover:text-amber-400">
-            Go to Settings
+            {t('chat.goToSettings')}
           </a>{' '}
-          to add your Anthropic API key.
+          {t('chat.toAddApiKey')}
         </div>
       )}
 
